@@ -1,8 +1,18 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["*"]
+  create:
+  delete:
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,20 +32,42 @@ jobs:
       - name: Configure Git safe.directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Fetch ALL branches and tags from origin
+      - name: Fetch all branches and tags from origin
         run: |
+          # Point origin to the canonical repo URL and fetch everything
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
           git fetch --prune --tags origin
+
+          # Materialize every remote branch as a local branch
           git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
             [ "$br" = "HEAD" ] && continue
             git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
           done
 
-      - name: Push mirror to GitLab (heads/tags/notes only; exclude internal refs)
+          echo "Local heads before cleanup:" >&2
+          git for-each-ref --format='%(refname)' refs/heads | sed 's#^#  #'
+
+          # Remove synthetic/internal heads created by actions/checkout in PRs:
+          # e.g., refs/heads/repo/mirror-*, or any heads starting with repo/, pull/, changes/
+          for ns in repo pull changes; do
+            git for-each-ref --format='%(refname)' "refs/heads/${ns}" | while read -r ref; do
+              echo "Deleting stray head: $ref" >&2
+              git update-ref -d "$ref" || true
+            done
+          done
+
+          echo "Local heads after cleanup:" >&2
+          git for-each-ref --format='%(refname)' refs/heads | sed 's#^#  #'
+
+      - name: Push to GitLab (branches/tags only)
         env:
           MIRROR_URL: ${{ secrets.MIRROR_URL }}
         run: |
           git remote remove mirror 2>/dev/null || true
           git remote add mirror "$MIRROR_URL"
+
+          # Push only standard namespaces
           git push --prune mirror +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
+
+          # Optional notes
           git push --prune mirror +refs/notes/*:refs/notes/* || true
