@@ -29,7 +29,7 @@ export default function loadSignalParamsFromLocalStorage() {
       const storedParams = localStorage.getItem('signalParams');
       if (!storedParams) {
         saveSignalParamsToLocalStorage(defaultParams);
-        return JSON.parse(defaultParams);
+        return defaultParams;
       }
       return JSON.parse(storedParams);
     } catch (error) {
@@ -78,16 +78,41 @@ async function fetchSignal(signalParams, update=false) {
     }
 }
 
+// Helper function to check if IndexedDB has signal data
+async function checkDBHasData() {
+    try {
+        const db = new Dexie('SignalDB');
+        db.version(1).stores({
+            signals: 'Freq'
+        });
+        const count = await db.signals.count();
+        return count > 0;
+    } catch (error) {
+        console.error('Error checking DB data:', error);
+        return false;
+    }
+}
+
 const dbName = 'SignalDB';
 const isExisting = (await window.indexedDB.databases()).map(db => db.name).includes(dbName);
 console.log("DB exists:", isExisting);
 
-// If no saved params, generate default Sinc locally and populate DB
+// Initialize DB if it's empty (regardless of localStorage state)
 try {
-    const hasSavedParams = !!localStorage.getItem('signalParams');
-    if (!hasSavedParams) {
+    const hasDBData = await checkDBHasData();
+    console.log("DB has data:", hasDBData);
+
+    if (!hasDBData) {
+        // DB is empty, populate it
         if (typeof window.showChartLoading === 'function') window.showChartLoading();
-        await fetchSignal(defaultParams, true);
+
+        // Use saved params if available, otherwise use defaults
+        const paramsToUse = localStorage.getItem('signalParams')
+            ? loadSignalParamsFromLocalStorage()
+            : defaultParams;
+
+        console.log("Populating empty DB with params:", paramsToUse);
+        await fetchSignal(paramsToUse, true);
     }
 } catch (e) {
     console.warn('Unable to initialize default data:', e);
