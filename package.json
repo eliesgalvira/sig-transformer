@@ -14,7 +14,7 @@
     "@radix-ui/react-tabs": "1.1.9",
     "@tabler/icons": "3.31.0",
     "@vercel/analytics": "1.5.0",
-    "astro": "5.7.10",
+    "astro": "5.15.1",
     "dexie": "4.0.11",
     "fft.js": "4.0.4",
     "lightweight-charts": "5.0.6",
