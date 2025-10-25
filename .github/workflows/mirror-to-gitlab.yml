@@ -9,13 +9,16 @@ on:
 
 jobs:
   mirror:
+    # Secrets are available (not a fork), so allow PR runs too
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Shallow is fine; we'll fetch everything explicitly
           fetch-depth: 1
 
       - name: Start SSH agent and add deploy key
@@ -33,19 +36,35 @@ jobs:
 
       - name: Fetch all branches and tags from origin
         run: |
+          # Ensure origin points to the canonical HTTPS URL for this repo
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+
+          # Fetch every branch and tag into remote-tracking refs
           git fetch --prune --tags origin
-          # materialize every remote branch as a local branch
+
+          # Materialize every remote branch as a local branch so it gets pushed
           git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
             [ "$br" = "HEAD" ] && continue
             git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
           done
 
-      - name: Push to GitLab (branches/tags only)
+          # Remove GitHub-internal/synthetic refs that we never want to push
+          # (e.g., actions/checkout creates refs/repo/mirror-*)
+          for ns in repo pull changes; do
+            git for-each-ref --format='%(refname)' "refs/${ns}" | while read -r ref; do
+              git update-ref -d "$ref" || true
+            done
+          done
+
+      - name: Push to GitLab (branches/tags only; exclude internal refs)
         env:
           MIRROR_URL: ${{ secrets.MIRROR_URL }}
         run: |
           git remote remove mirror 2>/dev/null || true
           git remote add mirror "$MIRROR_URL"
+
+          # Push only standard namespaces to avoid repo/* shallow-ref errors
           git push --prune mirror +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
+
+          # Optional: mirror notes (ignore if none exist)
           git push --prune mirror +refs/notes/*:refs/notes/* || true
