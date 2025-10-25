@@ -1,16 +1,10 @@
-name: Mirror to GitLab
-on:
-  push:
-    branches: ["**"]
-    tags: ["*"]
-
 jobs:
   mirror:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Checkout (shallow is fine; we'll fetch everything next)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -30,24 +24,18 @@ jobs:
 
       - name: Fetch ALL branches and tags from origin
         run: |
-          # Make sure we have every branch in local refs/heads/*
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
           git fetch --prune --tags origin
-          # Map all remote branches into local refs/heads (no refs/remotes/* left behind)
           git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
             [ "$br" = "HEAD" ] && continue
             git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
           done
 
-      - name: Push mirror to GitLab (heads/tags/notes only)
+      - name: Push mirror to GitLab (heads/tags/notes only; exclude internal refs)
         env:
           MIRROR_URL: ${{ secrets.MIRROR_URL }}
         run: |
           git remote remove mirror 2>/dev/null || true
           git remote add mirror "$MIRROR_URL"
-
-          # Push all branches and tags (including newly created ones)
           git push --prune mirror +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
-
-          # Optional: push notes if you use them
           git push --prune mirror +refs/notes/*:refs/notes/* || true
