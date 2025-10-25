@@ -1,3 +1,12 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["*"]
+  create:
+  delete:
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
@@ -22,16 +31,17 @@ jobs:
       - name: Configure Git safe.directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Fetch ALL branches and tags from origin
+      - name: Fetch all branches and tags from origin
         run: |
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
           git fetch --prune --tags origin
+          # materialize every remote branch as a local branch
           git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
             [ "$br" = "HEAD" ] && continue
             git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
           done
 
-      - name: Push mirror to GitLab (heads/tags/notes only; exclude internal refs)
+      - name: Push to GitLab (branches/tags only)
         env:
           MIRROR_URL: ${{ secrets.MIRROR_URL }}
         run: |
