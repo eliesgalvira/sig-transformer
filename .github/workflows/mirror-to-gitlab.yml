@@ -17,7 +17,6 @@ jobs:
       - name: Checkout (full history)
         uses: actions/checkout@v4
         with:
-          # Fetch full history to avoid "shallow update not allowed"
           fetch-depth: 0
           fetch-tags: true
 
@@ -25,7 +24,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.MIRROR_SSH_KEY }}
-          # Optional: set to true to see the public key in logs
           log-public-key: false
 
       - name: Trust gitlab.com host
@@ -38,14 +36,13 @@ jobs:
 
       - name: Normalize origin and fetch everything
         run: |
-          # Ensure origin URL is canonical and fetch all refs
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
           git fetch --prune --tags origin
-
-          echo "Local heads:"
-          git for-each-ref --format='%(refname)' refs/heads | sed 's#^#  #'
-          echo "Remote heads (origin):"
-          git for-each-ref --format='%(refname)' refs/remotes/origin | sed 's#^#  #'
+          # Materialize each origin branch as a local branch so we can push refs/heads/*
+          git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
+            [ "$br" = "HEAD" ] && continue
+            git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
+          done
 
       - name: Push to GitLab (branches/tags only)
         env:
@@ -54,8 +51,8 @@ jobs:
           git remote remove mirror 2>/dev/null || true
           git remote add mirror "$MIRROR_URL"
 
-          # Push branches and tags. Using refspecs avoids needing local branches.
-          git push --prune mirror +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
+          # Push local branches and tags
+          git push --prune mirror +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
 
-          # Optional: push notes if you use them (ignore failures if none exist)
+          # Optional: notes
           git push --prune mirror +refs/notes/*:refs/notes/* || true
