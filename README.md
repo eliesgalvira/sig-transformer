@@ -14,3 +14,6 @@ This is a project to visualize the transforms of discrete signals and operations
 In accordance with the licence of the charts library lightweight-charts read this notice:
 TradingView Lightweight Charts™
 Copyright (с) 2025 TradingView, Inc. https://www.tradingview.com/
+
+# Mirror
+I fixed the mirror issue with this lovely [chat](https://t3.chat/chat/e42b9024-1607-43e3-9c0d-ee075d389935). No you can't access it but I can.
