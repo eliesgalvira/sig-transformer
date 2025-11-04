@@ -6,12 +6,17 @@ on:
     tags: ["*"]
   create:
   delete:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    concurrency:
+      group: mirror-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout (full history)
@@ -38,7 +43,6 @@ jobs:
         run: |
           git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
           git fetch --prune --tags origin
-          # Materialize each origin branch as a local branch so we can push refs/heads/*
           git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | while read -r br; do
             [ "$br" = "HEAD" ] && continue
             git update-ref "refs/heads/$br" "refs/remotes/origin/$br"
@@ -50,9 +54,6 @@ jobs:
         run: |
           git remote remove mirror 2>/dev/null || true
           git remote add mirror "$MIRROR_URL"
-
-          # Push local branches and tags
           git push --prune mirror +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
-
-          # Optional: notes
           git push --prune mirror +refs/notes/*:refs/notes/* || true
+
