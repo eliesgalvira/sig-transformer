@@ -28,38 +28,41 @@ function GithubIcon() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-900">
+    <div className="min-h-screen bg-[#171717]">
       <header className="w-full flex flex-col items-center justify-center px-4 relative">
-        <h1 className="mt-12 text-white md:text-6xl text-5xl font-bold leading-none text-center mb-8">
+        <h1 className="mt-12 text-neutral-100 md:text-6xl text-5xl font-bold leading-none text-center mb-4 tracking-tight">
           Signal{' '}
-          <span className="bg-gradient-to-r from-purple-400 to-purple-900 bg-clip-text text-transparent bg-[size:400%] bg-[position:0%] animate-gradient">
+          <span className="bg-gradient-to-r from-purple-300 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
             Transformer
           </span>{' '}
           Tool
         </h1>
-        <h2 className="text-white md:text-2xl text-xl font-light leading-none text-center mb-8">
+        <p className="text-neutral-500 md:text-lg text-base font-normal tracking-wide mb-10">
           by Elies
-        </h2>
+        </p>
         <Link
           href="https://www.github.com/eliesgalvira/sig-transformer"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 w-12 h-12 sm:w-16 sm:h-16 transition-transform hover:scale-110"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 w-10 h-10 sm:w-12 sm:h-12 transition-all duration-200 hover:scale-105 opacity-80 hover:opacity-100"
         >
           <GithubIcon />
         </Link>
       </header>
 
-      <main className="flex flex-col w-full items-center justify-start mx-auto p-4 max-w-7xl text-base sm:text-lg lg:text-xl leading-relaxed sm:leading-loose">
-        <p className="mb-8 border border-opacity-25 border-purple-300 bg-gradient-to-b from-purple-900/70 to-purple-900/30 p-4 sm:p-6 rounded-lg text-white w-full max-w-3xl">
-          Generate your signal and observe its{' '}
-          <code className="text-sm font-bold bg-purple-300/10 text-purple-300 rounded px-1.5 py-1">
-            DFT
-          </code>{' '}
-          (Discrete Fourier Transform)
-          <br />
-          <strong className="text-purple-300">Challenge:</strong> Guess the shape of the transform beforehand.
-        </p>
+      <main className="flex flex-col w-full items-center justify-start mx-auto px-4 pb-4 max-w-7xl text-base leading-relaxed">
+        <div className="mb-10 px-5 py-4 rounded-lg bg-neutral-800/40 border border-neutral-700/40 backdrop-blur-sm w-full max-w-3xl">
+          <p className="text-neutral-300 text-sm sm:text-base m-0">
+            Generate your signal and observe its{' '}
+            <code className="text-xs sm:text-sm font-mono font-medium bg-purple-500/15 text-purple-300 rounded px-1.5 py-0.5">
+              DFT
+            </code>{' '}
+            (Discrete Fourier Transform)
+          </p>
+          <p className="text-neutral-400 text-sm mt-2 m-0">
+            <span className="text-purple-400 font-medium">Challenge:</span> Guess the shape of the transform beforehand.
+          </p>
+        </div>
 
         {/* Main content grid */}
         <div className="w-full grid grid-cols-1 md:grid-cols-5 md:gap-x-8 lg:gap-x-12 gap-y-8 items-start">
@@ -69,13 +72,13 @@ export default function Home() {
           </div>
 
           {/* Right column - Chart */}
-          <div className="md:col-span-3 flex flex-col justify-center min-w-0 rounded-lg min-h-[760px] relative bg-neutral-900">
+          <div className="md:col-span-3 flex flex-col justify-center min-w-0 rounded-lg min-h-[760px] relative bg-[#171717]">
             <SignalChart />
           </div>
         </div>
 
         {/* Info Cards */}
-        <ul role="list" className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6 p-0 my-10 sm:my-12">
+        <ul role="list" className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-4 p-0 mt-12 mb-8">
           <InfoCard
             href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"
             title="DFT"
@@ -89,26 +92,26 @@ export default function Home() {
         </ul>
 
         {/* Footer credits */}
-        <p className="text-center text-sm text-neutral-400 mt-8 mb-8">
-          Charts made with the{' '}
+        <footer className="text-center text-xs text-neutral-500 mt-4 mb-8 px-4">
+          Charts made with{' '}
           <Link
             href="https://www.tradingview.com/lightweight-charts/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-center font-medium bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="text-purple-400/80 hover:text-purple-300 transition-colors"
           >
             lightweight-charts
           </Link>{' '}
-          library and FFT algorithm from{' '}
+          · FFT algorithm from{' '}
           <Link
             href="https://www.fftw.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-center font-medium bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="text-purple-400/80 hover:text-purple-300 transition-colors"
           >
             fftw3
           </Link>
-        </p>
+        </footer>
       </main>
     </div>
   );
