@@ -237,10 +237,10 @@ export function SignalChart() {
     <div id="chart-root" className="relative w-full flex flex-col">
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-900 z-20 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#171717]/95 backdrop-blur-sm z-20 rounded-lg">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-t-purple-500 border-purple-200/30 rounded-full animate-spin"></div>
-            <p className="text-white font-medium">Processing signal data...</p>
+            <div className="w-8 h-8 border-2 border-t-purple-400 border-purple-400/20 rounded-full animate-spin"></div>
+            <p className="text-neutral-400 text-sm font-medium">Processing signal data...</p>
           </div>
         </div>
       )}
@@ -248,32 +248,32 @@ export function SignalChart() {
       <div
         id="container1"
         ref={container1Ref}
-        className="my-10 h-[300px] md:min-w-0 md:w-full relative"
+        className="my-8 h-[300px] md:min-w-0 md:w-full relative"
       >
         <div
           id="inputLegend"
           ref={inputLegendRef}
-          className="absolute left-0 top-0 z-10 font-sans font-light text-white p-2 rounded pointer-events-none max-w-sm md:max-w-xl break-words"
+          className="absolute left-0 top-0 z-10 font-sans font-light text-neutral-200 p-2 rounded pointer-events-none max-w-sm md:max-w-xl break-words"
         />
       </div>
 
       <Tabs value={outputType} onValueChange={handleTabChange} className="w-fit">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="real">Real</TabsTrigger>
-          <TabsTrigger value="imaginary">Imaginary</TabsTrigger>
-          <TabsTrigger value="modulus">Modulus</TabsTrigger>
+        <TabsList className="h-8 bg-neutral-800/50 border border-neutral-700/40 p-0.5">
+          <TabsTrigger value="real" className="h-7 px-3 text-xs font-medium text-neutral-400 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-200 data-[state=active]:border-purple-500/30 transition-colors">Real</TabsTrigger>
+          <TabsTrigger value="imaginary" className="h-7 px-3 text-xs font-medium text-neutral-400 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-200 data-[state=active]:border-purple-500/30 transition-colors">Imaginary</TabsTrigger>
+          <TabsTrigger value="modulus" className="h-7 px-3 text-xs font-medium text-neutral-400 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-200 data-[state=active]:border-purple-500/30 transition-colors">Modulus</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div
         id="container2"
         ref={container2Ref}
-        className="mb-10 h-[300px] md:min-w-0 md:w-full relative"
+        className="mb-8 h-[300px] md:min-w-0 md:w-full relative"
       >
         <div
           id="outputLegend"
           ref={outputLegendRef}
-          className="absolute left-0 top-0 z-10 font-sans font-light text-white p-2 rounded pointer-events-none max-w-sm md:max-w-xl break-words"
+          className="absolute left-0 top-0 z-10 font-sans font-light text-neutral-200 p-2 rounded pointer-events-none max-w-sm md:max-w-xl break-words"
         />
       </div>
     </div>
