@@ -169,8 +169,9 @@ export function useLightweightChart(
   }, [containerRef, chartOptions, seriesOptions, updateLegend]);
 
   const setData = useCallback((data: ChartDataPoint[]) => {
-    if (seriesRef.current) {
+    if (seriesRef.current && chartRef.current) {
       seriesRef.current.setData(data as LineData<Time>[]);
+      chartRef.current.timeScale().fitContent();
       requestAnimationFrame(() => updateLegend(undefined));
     }
   }, [updateLegend]);

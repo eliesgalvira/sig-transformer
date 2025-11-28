@@ -163,7 +163,6 @@ export function SignalChart() {
 
   const {
     setData: setInputChartData,
-    fitContent: fitInputChartContent,
     updateLegend: updateInputLegendManual,
   } = useLightweightChart(
     container1Ref,
@@ -175,7 +174,6 @@ export function SignalChart() {
 
   const {
     setData: setOutputChartData,
-    fitContent: fitOutputChartContent,
     updateLegend: updateOutputLegendManual,
   } = useLightweightChart(
     container2Ref,
@@ -202,8 +200,6 @@ export function SignalChart() {
         setOutputChartData(outputSignalSliced);
 
         requestAnimationFrame(() => {
-          fitInputChartContent();
-          fitOutputChartContent();
           updateInputLegendManual(undefined);
           updateOutputLegendManual(undefined);
         });
@@ -221,8 +217,6 @@ export function SignalChart() {
     getData,
     setInputChartData,
     setOutputChartData,
-    fitInputChartContent,
-    fitOutputChartContent,
     updateInputLegendManual,
     updateOutputLegendManual,
   ]);
