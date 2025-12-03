@@ -19,12 +19,6 @@ function roundTo(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
-interface FFTResult {
-  rows: FFTDataRow[];
-  totalSamples: number;
-  paddedSize: number;
-}
-
 function processFFTOutput(
   out: number[],
   paddedSize: number,
