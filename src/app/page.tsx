@@ -51,23 +51,22 @@ export default function Home() {
       </header>
 
       <main className="flex flex-col w-full items-center justify-start mx-auto px-4 pb-4 max-w-7xl text-base leading-relaxed">
-        <div className="mb-10 px-5 py-4 rounded-lg bg-neutral-800/40 border border-neutral-700/40 backdrop-blur-sm w-full max-w-3xl">
-          <p className="text-neutral-300 text-sm sm:text-base m-0">
-            Generate your signal and observe its{' '}
-            <code className="text-xs sm:text-sm font-mono font-medium bg-purple-500/15 text-purple-300 rounded px-1.5 py-0.5">
-              DFT
-            </code>{' '}
-            (Discrete Fourier Transform)
-          </p>
-          <p className="text-neutral-400 text-sm mt-2 m-0">
-            <span className="text-purple-400 font-medium">Challenge:</span> Guess the shape of the transform beforehand.
-          </p>
-        </div>
-
         {/* Main content grid */}
         <div className="w-full grid grid-cols-1 md:grid-cols-5 md:gap-x-8 lg:gap-x-12 gap-y-8 items-start">
-          {/* Left column - Form */}
+          {/* Left column - Challenge card and Form */}
           <div className="md:col-span-2 flex flex-col justify-start px-4 md:px-0">
+            <div className="mb-6 px-5 py-4 rounded-lg bg-neutral-800/40 border border-neutral-700/40 backdrop-blur-sm w-full">
+              <p className="text-neutral-300 text-sm sm:text-base m-0">
+                Generate your signal and observe its{' '}
+                <code className="text-xs sm:text-sm font-mono font-medium bg-purple-500/15 text-purple-300 rounded px-1.5 py-0.5">
+                  DFT
+                </code>{' '}
+                (Discrete Fourier Transform)
+              </p>
+              <p className="text-neutral-400 text-sm mt-2 m-0">
+                <span className="text-purple-400 font-medium">Challenge:</span> Guess the shape of the transform beforehand.
+              </p>
+            </div>
             <WaveformGenerator />
           </div>
 
