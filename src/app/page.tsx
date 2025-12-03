@@ -67,12 +67,12 @@ export default function Home() {
         {/* Main content grid */}
         <div className="w-full grid grid-cols-1 md:grid-cols-5 md:gap-x-8 lg:gap-x-12 gap-y-8 items-start">
           {/* Left column - Form */}
-          <div className="md:col-span-2 flex flex-col justify-center px-4 md:px-0">
+          <div className="md:col-span-2 flex flex-col justify-start px-4 md:px-0">
             <WaveformGenerator />
           </div>
 
           {/* Right column - Chart */}
-          <div className="md:col-span-3 flex flex-col justify-center min-w-0 rounded-lg min-h-[760px] relative bg-[#171717]">
+          <div className="md:col-span-3 flex flex-col justify-start min-w-0 rounded-lg min-h-[760px] relative bg-[#171717]">
             <SignalChart />
           </div>
         </div>

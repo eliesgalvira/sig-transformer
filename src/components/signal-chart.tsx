@@ -242,7 +242,7 @@ export function SignalChart() {
       <div
         id="container1"
         ref={container1Ref}
-        className="my-8 h-[300px] md:min-w-0 md:w-full relative"
+        className="mb-8 h-[300px] md:min-w-0 md:w-full relative"
       >
         <div
           id="inputLegend"
