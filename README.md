@@ -33,3 +33,5 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 - [] Reload charts when viewport size changes to always force correct layout
     - if you change to mobile phone layout through dev tools, you'll see the bug
+- [] Let users paste an array of numbers and see the FFT result live
+
