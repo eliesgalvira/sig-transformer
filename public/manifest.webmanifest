@@ -1,0 +1,31 @@
+{
+  "name": "Signal Transformer Tool",
+  "short_name": "SigTransformer",
+  "description": "Generate signals and observe their DFT (Discrete Fourier Transform)",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0f1a",
+  "theme_color": "#0b0f1a",
+  "icons": [
+    {
+      "src": "/favicon-512.png?v=4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Signal Transformer",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/favicon-512.png?v=4",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

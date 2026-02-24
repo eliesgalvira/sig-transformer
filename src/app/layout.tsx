@@ -15,15 +15,18 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const ICON_ASSET_VERSION = '4';
+
 export const metadata: Metadata = {
   title: 'Signal Transformer Tool',
   description: 'Generate signals and observe their DFT (Discrete Fourier Transform)',
+  manifest: `/manifest.webmanifest?v=${ICON_ASSET_VERSION}`,
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: `/favicon.svg?v=${ICON_ASSET_VERSION}`, type: 'image/svg+xml' },
+      { url: `/favicon.ico?v=${ICON_ASSET_VERSION}`, type: 'image/x-icon' },
     ],
-    apple: '/favicon-512.png',
+    apple: `/favicon-512.png?v=${ICON_ASSET_VERSION}`,
   },
 };
 
