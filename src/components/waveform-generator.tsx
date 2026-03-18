@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { useSignal } from '@/contexts/signal-context';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,79 +13,118 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { SignalParams, WaveformShape } from '@/lib/types/signal';
-import { 
-  loadSignalParamsFromLocalStorage, 
-  getFrequencyLabel, 
+import { DEFAULT_PARAMS, type SignalParams, type WaveformShape } from '@/lib/types/signal';
+import {
+  STORAGE_KEY,
+  getFrequencyLabel,
   getPhaseLabel,
   calculateDynamicMax,
-  getWaveformLabel
 } from '@/lib/signal/handler';
+
+type StoredSignalParams = {
+  a: string | number;
+  b: string | number;
+  signalShape: WaveformShape;
+  amplitude: string | number;
+  frequency: string | number;
+  phase: string | number;
+  interval: string | number;
+  freqrange: string | number;
+};
+
+type FormState = {
+  start: string;
+  end: string;
+  waveform: WaveformShape;
+  amplitude: string;
+  frequency: string;
+  phase: string;
+  interval: string;
+  bandwidth: string;
+};
+
+const toFormState = (params: StoredSignalParams): FormState => ({
+  start: String(params.a),
+  end: String(params.b),
+  waveform: params.signalShape,
+  amplitude: String(params.amplitude),
+  frequency: String(params.frequency),
+  phase: String(params.phase),
+  interval: String(params.interval),
+  bandwidth: String(params.freqrange),
+});
+
+const toStoredSignalParams = (form: FormState): StoredSignalParams => ({
+  a: form.start,
+  b: form.end,
+  signalShape: form.waveform,
+  amplitude: form.amplitude,
+  frequency: form.frequency,
+  phase: form.phase,
+  interval: form.interval,
+  freqrange: form.bandwidth,
+});
+
+const getMaxBandwidth = (start: string, end: string, interval: string): number => {
+  const a = parseFloat(start);
+  const b = parseFloat(end);
+  const currentInterval = parseFloat(interval);
+
+  if (isNaN(a) || isNaN(b) || isNaN(currentInterval) || currentInterval <= 0) {
+    return 50;
+  }
+
+  return calculateDynamicMax(a, b, currentInterval);
+};
+
+const clampBandwidth = (bandwidth: string, maxBandwidth: number): string => {
+  const value = parseFloat(bandwidth);
+
+  if (isNaN(value)) {
+    return bandwidth;
+  }
+
+  return Math.min(value, maxBandwidth).toString();
+};
 
 export function WaveformGenerator() {
   const { generateSignal, isLoading } = useSignal();
-  
-  // Form state
-  const [start, setStart] = useState('-20');
-  const [end, setEnd] = useState('20');
-  const [waveform, setWaveform] = useState<WaveformShape>('sinc');
-  const [amplitude, setAmplitude] = useState('1');
-  const [frequency, setFrequency] = useState('1');
-  const [phase, setPhase] = useState('0');
-  const [interval, setInterval] = useState('0.01');
-  const [bandwidth, setBandwidth] = useState('4');
-  const [maxBandwidth, setMaxBandwidth] = useState(50);
+  const [storedForm, setStoredForm] = useLocalStorage<StoredSignalParams>(
+    STORAGE_KEY,
+    DEFAULT_PARAMS,
+    { initializeWithValue: false }
+  );
+  const form = toFormState(storedForm);
 
   // Dynamic labels based on waveform
-  const frequencyLabel = getFrequencyLabel(waveform);
-  const phaseLabel = getPhaseLabel(waveform);
+  const frequencyLabel = getFrequencyLabel(form.waveform);
+  const phaseLabel = getPhaseLabel(form.waveform);
+  const maxBandwidth = getMaxBandwidth(form.start, form.end, form.interval);
 
-  // Calculate dynamic max bandwidth
-  const updateDynamicMax = useCallback(() => {
-    const a = parseFloat(start);
-    const b = parseFloat(end);
-    const currentInterval = parseFloat(interval);
-    
-    if (isNaN(a) || isNaN(b) || isNaN(currentInterval) || currentInterval <= 0) return;
-    
-    const dynamicMax = calculateDynamicMax(a, b, currentInterval);
-    setMaxBandwidth(dynamicMax);
-    
-    if (parseFloat(bandwidth) > dynamicMax) {
-      setBandwidth(dynamicMax.toString());
-    }
-  }, [start, end, interval, bandwidth]);
+  const updateForm = (updates: Partial<FormState>) => {
+    setStoredForm((current) => {
+      const next = { ...toFormState(current), ...updates };
+      const nextMaxBandwidth = getMaxBandwidth(next.start, next.end, next.interval);
 
-  // Load saved params on mount
-  useEffect(() => {
-    const params = loadSignalParamsFromLocalStorage();
-    setStart(params.a.toString());
-    setEnd(params.b.toString());
-    setWaveform(params.signalShape);
-    setAmplitude(params.amplitude.toString());
-    setFrequency(params.frequency.toString());
-    setPhase(params.phase.toString());
-    setInterval(params.interval.toString());
-    setBandwidth(params.freqrange.toString());
-  }, []);
-
-  // Update max bandwidth when dependencies change
-  useEffect(() => {
-    updateDynamicMax();
-  }, [updateDynamicMax]);
+      return toStoredSignalParams({
+        ...next,
+        bandwidth: clampBandwidth(next.bandwidth, nextMaxBandwidth),
+      });
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const params: SignalParams = {
-      a: parseFloat(start),
-      b: parseFloat(end),
-      signalShape: waveform,
-      amplitude: parseFloat(amplitude),
-      frequency: parseFloat(frequency),
-      phase: parseFloat(phase),
-      interval: parseFloat(interval),
-      freqrange: parseFloat(bandwidth),
+      a: parseFloat(form.start),
+      b: parseFloat(form.end),
+      signalShape: form.waveform,
+      amplitude: parseFloat(form.amplitude),
+      frequency: parseFloat(form.frequency),
+      phase: parseFloat(form.phase),
+      interval: parseFloat(form.interval),
+      freqrange: parseFloat(clampBandwidth(form.bandwidth, maxBandwidth)),
     };
 
     await generateSignal(params);
@@ -112,8 +151,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="start"
-                  value={start}
-                  onChange={(e) => setStart(e.target.value)}
+                  value={form.start}
+                  onChange={(e) => updateForm({ start: e.target.value })}
                   step="0.1"
                   min="-50"
                   max="-1"
@@ -125,8 +164,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="end"
-                  value={end}
-                  onChange={(e) => setEnd(e.target.value)}
+                  value={form.end}
+                  onChange={(e) => updateForm({ end: e.target.value })}
                   step="0.1"
                   min="1"
                   max="50"
@@ -139,7 +178,7 @@ export function WaveformGenerator() {
             <div className="grid grid-cols-2 gap-3">
               <Field>
                 <FieldLabel htmlFor="waveform" className="text-neutral-400 text-xs font-medium">Waveform:</FieldLabel>
-                <Select value={waveform} onValueChange={(v) => setWaveform(v as WaveformShape)}>
+                <Select value={form.waveform} onValueChange={(v) => updateForm({ waveform: v as WaveformShape })}>
                   <SelectTrigger id="waveform" className="h-8 bg-neutral-900/60 border-neutral-700/50 text-neutral-200 text-sm focus:border-purple-500/50 focus:ring-purple-500/20">
                     <SelectValue placeholder="Select waveform" />
                   </SelectTrigger>
@@ -159,8 +198,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="amplitude"
-                  value={amplitude}
-                  onChange={(e) => setAmplitude(e.target.value)}
+                  value={form.amplitude}
+                  onChange={(e) => updateForm({ amplitude: e.target.value })}
                   step="0.1"
                   min="-100"
                   max="100"
@@ -176,8 +215,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="frequency"
-                  value={frequency}
-                  onChange={(e) => setFrequency(e.target.value)}
+                  value={form.frequency}
+                  onChange={(e) => updateForm({ frequency: e.target.value })}
                   step="0.1"
                   min="0.1"
                   max="50"
@@ -189,8 +228,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="phase"
-                  value={phase}
-                  onChange={(e) => setPhase(e.target.value)}
+                  value={form.phase}
+                  onChange={(e) => updateForm({ phase: e.target.value })}
                   step="0.01"
                   min="-100"
                   max="100"
@@ -206,8 +245,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="interval"
-                  value={interval}
-                  onChange={(e) => setInterval(e.target.value)}
+                  value={form.interval}
+                  onChange={(e) => updateForm({ interval: e.target.value })}
                   step="0.01"
                   min="0.01"
                   max="0.1"
@@ -221,8 +260,8 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="bandwidth"
-                  value={bandwidth}
-                  onChange={(e) => setBandwidth(e.target.value)}
+                  value={form.bandwidth}
+                  onChange={(e) => updateForm({ bandwidth: e.target.value })}
                   step="0.1"
                   min="0.1"
                   max={maxBandwidth}
@@ -252,4 +291,3 @@ export function WaveformGenerator() {
     </Card>
   );
 }
-

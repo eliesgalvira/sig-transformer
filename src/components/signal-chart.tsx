@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSignal } from '@/contexts/signal-context';
 import { useSignalData } from '@/hooks/use-signal-data';
 import { useLightweightChart } from '@/hooks/use-lightweight-chart';
@@ -273,4 +273,3 @@ export function SignalChart() {
     </div>
   );
 }
-

@@ -1,10 +1,11 @@
-import type { SignalParams, SignalParamsRaw, DEFAULT_PARAMS } from '@/lib/types/signal';
+import { DEFAULT_PARAMS, type SignalParams, type SignalParamsRaw } from '@/lib/types/signal';
 
-const STORAGE_KEY = 'signalParams';
+export const STORAGE_KEY = 'signalParams';
 
 export function saveSignalParamsToLocalStorage(params: SignalParams): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(params));
+    window.dispatchEvent(new StorageEvent('local-storage', { key: STORAGE_KEY }));
     return true;
   } catch (error) {
     console.error('Error saving to LocalStorage:', error);
@@ -13,27 +14,16 @@ export function saveSignalParamsToLocalStorage(params: SignalParams): boolean {
 }
 
 export function loadSignalParamsFromLocalStorage(): SignalParams {
-  const defaultParams: SignalParams = {
-    a: -20,
-    b: 20,
-    signalShape: 'sinc',
-    amplitude: 1,
-    frequency: 1,
-    phase: 0,
-    interval: 0.01,
-    freqrange: 4,
-  };
-
   try {
     const storedParams = localStorage.getItem(STORAGE_KEY);
     if (!storedParams) {
-      saveSignalParamsToLocalStorage(defaultParams);
-      return defaultParams;
+      saveSignalParamsToLocalStorage(DEFAULT_PARAMS);
+      return DEFAULT_PARAMS;
     }
-    return JSON.parse(storedParams) as SignalParams;
+    return parseSignalParams(JSON.parse(storedParams) as SignalParamsRaw);
   } catch (error) {
     console.error('Error reading from LocalStorage:', error);
-    return defaultParams;
+    return DEFAULT_PARAMS;
   }
 }
 
@@ -48,19 +38,6 @@ export function parseSignalParams(raw: SignalParamsRaw): SignalParams {
     interval: parseFloat(raw.interval),
     freqrange: parseFloat(raw.freqrange),
   };
-}
-
-export function getWaveformLabel(shape: SignalParams['signalShape']): string {
-  const labels: Record<SignalParams['signalShape'], string> = {
-    square: 'Square',
-    triangle: 'Triangle',
-    sinc: 'Sinc',
-    cos: 'Cosine',
-    sin: 'Sine',
-    exp: 'exp',
-    sign: 'sign',
-  };
-  return labels[shape];
 }
 
 export function getFrequencyLabel(shape: SignalParams['signalShape']): string {
@@ -89,4 +66,3 @@ export function calculateDynamicMax(a: number, b: number, interval: number): num
   const dynamicMax = Math.floor(10 * (totalSamples - Math.round(totalSamples / 2)) / (totalSamples * interval)) / 10;
   return dynamicMax;
 }
-
