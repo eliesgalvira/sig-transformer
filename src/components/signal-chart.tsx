@@ -232,7 +232,7 @@ export function SignalChart() {
     <div id="chart-root" className="relative w-full h-full flex flex-col p-4 pt-10 gap-4 overflow-hidden">
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a]/95 backdrop-blur-sm z-20 rounded-lg pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#171717]/95 backdrop-blur-sm z-20 rounded-lg pointer-events-none">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-t-purple-400 border-purple-400/20 rounded-full animate-spin"></div>
             <p className="text-purple-400/80 text-xs font-mono font-bold tracking-widest uppercase">Processing signal data...</p>
