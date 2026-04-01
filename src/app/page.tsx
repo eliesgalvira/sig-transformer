@@ -28,88 +28,145 @@ function GithubIcon() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#171717]">
-      <header className="w-full flex flex-col items-center justify-center px-4 relative">
-        <h1 className="mt-12 text-neutral-100 md:text-6xl text-5xl font-bold leading-none text-center mb-4 tracking-tight">
-          Signal{' '}
-          <span className="bg-gradient-to-r from-purple-300 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-            Transformer
-          </span>{' '}
-          Tool
+    <div className="min-h-screen bg-workbench relative overflow-hidden">
+      {/* Background Signal Design */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20" aria-hidden="true">
+        <svg preserveAspectRatio="none" viewBox="0 0 1440 1000" className="w-full h-full text-purple-500">
+          {/* Upper criss-crossing exotic signal */}
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            d="M0 160 Q 40 80, 80 160 T 160 160 T 240 160 T 320 160 T 400 160 T 480 160 T 560 160 T 640 160 T 720 160 T 800 160 T 880 160 T 960 160 T 1040 160 T 1120 160 T 1200 160 T 1280 160 T 1360 160 T 1440 160"
+            className="opacity-40"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            d="M0 160 Q 60 250, 120 160 T 240 160 T 360 160 T 480 160 T 600 160 T 720 160 T 840 160 T 960 160 T 1080 160 T 1200 160 T 1320 160 T 1440 160"
+            className="opacity-30"
+          />
+
+          {/* Original mid-section waves */}
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            d="M0 400C120 400 240 200 360 200s240 400 360 400 240-400 360-400 240 200 360 200"
+            className="opacity-40"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            d="M0 400C120 400 240 300 360 300s240 200 360 200 240-200 360-200 240 100 360 100"
+            className="opacity-30"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            d="M0 600c150 0 200-300 350-300s200 300 350 300 200-300 350-300 200 300 350 300"
+            className="opacity-15"
+          />
+
+          {/* Bottom low frequency signal */}
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            d="M0 880 C 200 800, 400 960, 720 880 S 1240 960, 1440 880"
+            className="opacity-40"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            d="M0 900 C 300 980, 500 820, 720 900 S 1140 820, 1440 900"
+            className="opacity-20"
+          />
+        </svg>
+      </div>
+
+      <header className="w-full flex flex-col items-center justify-center px-4 relative z-10 py-6 border-b border-purple-500/20 bg-neutral-900/60 backdrop-blur-md shadow-[0_0_30px_rgba(168,85,247,0.05)]">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500/0 via-purple-400/50 to-purple-500/0"></div>
+        <h1 className="mt-4 text-neutral-100 md:text-5xl text-4xl font-mono font-bold leading-none text-center mb-2 tracking-tighter uppercase relative">
+          <span className="absolute -inset-1 blur-xl bg-purple-500/20 rounded-full"></span>
+          <span className="relative">Signal Workbench</span>
         </h1>
-        <p className="text-neutral-500 md:text-lg text-base font-normal tracking-wide mb-10">
-          by Elies
+        <p className="text-purple-400/80 md:text-base text-sm font-mono tracking-widest mb-2 uppercase text-sm">
+          // signal transformer tool by Elies
         </p>
         <Link
           href="https://www.github.com/eliesgalvira/sig-transformer"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 w-10 h-10 sm:w-12 sm:h-12 transition-all duration-200 hover:scale-105 opacity-80 hover:opacity-100"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-neutral-800 border border-purple-500/30 rounded shadow-[0_0_10px_rgba(168,85,247,0.1)] transition-all duration-200 hover:scale-105 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center p-2 text-purple-400"
         >
           <GithubIcon />
         </Link>
       </header>
 
-      <main className="flex flex-col w-full items-center justify-start mx-auto px-4 pb-4 max-w-7xl text-base leading-relaxed">
+      <main className="flex flex-col w-full items-center justify-start mx-auto px-4 pb-12 pt-8 max-w-[90rem] text-base leading-relaxed relative z-10">
         {/* Main content grid */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-5 md:gap-x-8 lg:gap-x-12 gap-y-8 items-start">
+        <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
           {/* Left column - Challenge card and Form */}
-          <div className="md:col-span-2 flex flex-col justify-start px-4 md:px-0">
-            <div className="mb-6 px-5 py-4 rounded-lg bg-neutral-800/40 border border-neutral-700/40 backdrop-blur-sm w-full">
-              <p className="text-neutral-300 text-sm sm:text-base m-0">
-                Generate your signal and observe its{' '}
-                <code className="text-xs sm:text-sm font-mono font-medium bg-purple-500/15 text-purple-300 rounded px-1.5 py-0.5">
-                  DFT
-                </code>{' '}
-                (Discrete Fourier Transform)
-              </p>
-              <p className="text-neutral-400 text-sm mt-2 m-0">
-                <span className="text-purple-400 font-medium">Challenge:</span> Guess the shape of the transform beforehand.
-              </p>
+          <div className="md:col-span-4 flex flex-col justify-start">
+            <div className="bg-neutral-900/80 border border-purple-500/30 p-1 shadow-[0_0_20px_rgba(0,0,0,0.4)] backdrop-blur-md relative overflow-hidden flex flex-col h-full min-h-[620px] md:min-h-[720px]">
+               {/* Techy corner accents */}
+               <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-purple-400"></div>
+               <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-purple-400"></div>
+               <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-purple-400"></div>
+               <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-purple-400"></div>
+               <WaveformGenerator />
             </div>
-            <WaveformGenerator />
           </div>
 
           {/* Right column - Chart */}
-          <div className="md:col-span-3 flex flex-col justify-start min-w-0 rounded-lg min-h-[760px] relative bg-[#171717]">
-            <SignalChart />
+          <div className="md:col-span-8 relative min-h-[500px] md:min-h-0">
+            <div className="w-full h-full md:absolute md:inset-0 flex flex-col justify-start bg-[#171717] border border-purple-500/30 p-1 shadow-[0_0_30px_rgba(0,0,0,0.6),inset_0_0_40px_rgba(168,85,247,0.03)] backdrop-blur-md z-10">
+              <div className="absolute top-0 left-4 px-2 py-1 bg-purple-500/20 border-x border-b border-purple-500/40 text-purple-400 text-xs font-mono font-bold tracking-widest z-20 rounded-b-md">
+                OSCILLOSCOPE VIEW
+              </div>
+              <div className="w-full flex-1 relative z-10 flex flex-col overflow-hidden min-h-0">
+                 {/* CRT Scanline effect overlaid on chart container */}
+                 <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] z-20 opacity-30"></div>
+                 <SignalChart />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Info Cards */}
-        <ul role="list" className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-4 p-0 mt-12 mb-8">
-          <InfoCard
-            href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"
-            title="DFT"
-            body="Learn more about the DFT and its properties."
-          />
-          <InfoCard
-            href="https://www.youtube.com/watch?v=h7apO7q16V0"
-            title="FFT Algorithm"
-            body="This video visually explains the algorithm that is used to transform the input signals."
-          />
-        </ul>
+        <div className="w-full mt-12 mb-8 relative">
+          <div className="flex items-center gap-4 mb-6">
+             <div className="h-px bg-purple-500/30 flex-1"></div>
+             <h2 className="text-purple-400/80 font-mono text-sm tracking-widest font-bold">DOCUMENTATION MODULES</h2>
+             <div className="h-px bg-purple-500/30 flex-1"></div>
+          </div>
+          <ul role="list" className="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 p-0">
+            <InfoCard
+              href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"
+              title="DFT Analysis"
+              body="Mathematical framework for discrete signals."
+            />
+            <InfoCard
+              href="https://www.youtube.com/watch?v=h7apO7q16V0"
+              title="FFT Implementation"
+              body="Algorithm visual reference and data processing details."
+            />
+          </ul>
+        </div>
 
         {/* Footer credits */}
-        <footer className="text-center text-xs text-neutral-500 mt-4 mb-8 px-4">
-          Charts made with{' '}
-          <Link
-            href="https://www.tradingview.com/lightweight-charts/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400/80 hover:text-purple-300 transition-colors"
-          >
-            lightweight-charts
-          </Link>{' '}
-          · FFT algorithm from{' '}
-          <Link
-            href="https://www.fftw.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400/80 hover:text-purple-300 transition-colors"
-          >
-            fftw3
-          </Link>
+        <footer className="w-full text-center text-xs text-neutral-600 mt-12 mb-4 px-4 font-mono border-t border-purple-500/20 pt-8 flex items-center justify-center">
+          <span>
+            Charts made with{' '}
+            <Link href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener noreferrer" className="text-purple-500/70 hover:text-purple-400 transition-colors">
+              lightweight-charts
+            </Link>
+          </span>
         </footer>
       </main>
     </div>
