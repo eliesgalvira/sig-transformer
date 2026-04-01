@@ -148,7 +148,7 @@ export function WaveformGenerator() {
         </Alert>
       </CardHeader>
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
-        <CardContent className="px-6">
+        <CardContent className="px-6 flex-1 flex flex-col">
           <FieldGroup className="gap-4">
             {/* Row 1: Start and End */}
             <div className="grid grid-cols-2 gap-3">
@@ -278,7 +278,7 @@ export function WaveformGenerator() {
           </FieldGroup>
 
           {/* Decorative Hardware Interface Panel */}
-          <div className="mt-8 p-3 rounded-lg bg-[#111111] border border-neutral-800 shadow-[inset_0_4px_10px_rgba(0,0,0,0.6)] flex items-end justify-between relative overflow-hidden">
+          <div className="mt-auto mb-auto p-2 rounded-lg bg-[#111111] border border-neutral-800 shadow-[inset_0_4px_10px_rgba(0,0,0,0.6)] flex items-end justify-between relative overflow-hidden">
             {/* Ventilation grill pattern top right */}
             <div className="absolute top-2 right-2 flex gap-1 z-0 opacity-20">
               <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
@@ -333,7 +333,7 @@ export function WaveformGenerator() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center pt-8">
+        <CardFooter className="flex justify-center pt-2">
           <Button
             type="submit"
             disabled={isLoading}
