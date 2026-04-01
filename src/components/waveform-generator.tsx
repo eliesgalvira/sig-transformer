@@ -2,6 +2,8 @@
 
 import { useLocalStorage } from 'usehooks-ts';
 import { useSignal } from '@/contexts/signal-context';
+import { MousePointer2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -137,9 +139,13 @@ export function WaveformGenerator() {
           Function Generator
         </CardTitle>
         <CardDescription className="text-neutral-500 text-sm">Parametrized functions</CardDescription>
-        <p className="text-xs text-neutral-500 mt-3 leading-relaxed">
-          Use your mouse wheel or pinch to zoom the graphs.
-        </p>
+        <Alert className="mt-4 border-purple-500/30 bg-purple-500/10 text-purple-200 shadow-[inset_0_0_10px_rgba(168,85,247,0.05)]">
+          <MousePointer2 />
+          <AlertTitle className="text-purple-300 font-mono text-xs font-bold tracking-widest uppercase">Canvas Controls</AlertTitle>
+          <AlertDescription className="text-xs text-purple-200/70 mt-1.5 font-mono">
+            Use your mouse wheel or pinch to zoom the graphs.
+          </AlertDescription>
+        </Alert>
       </CardHeader>
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
         <CardContent className="px-6">
