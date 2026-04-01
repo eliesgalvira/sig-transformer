@@ -31,7 +31,25 @@ export default function Home() {
     <div className="min-h-screen bg-workbench relative overflow-hidden">
       {/* Background Signal Design */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20 hidden md:block" aria-hidden="true">
-        <svg preserveAspectRatio="none" viewBox="0 0 1440 800" className="w-full h-full text-purple-500">
+        <svg preserveAspectRatio="none" viewBox="0 0 1440 1000" className="w-full h-full text-purple-500">
+          {/* Upper criss-crossing exotic signal */}
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            d="M0 160 Q 40 80, 80 160 T 160 160 T 240 160 T 320 160 T 400 160 T 480 160 T 560 160 T 640 160 T 720 160 T 800 160 T 880 160 T 960 160 T 1040 160 T 1120 160 T 1200 160 T 1280 160 T 1360 160 T 1440 160"
+            className="opacity-40"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+            d="M0 160 Q 60 250, 120 160 T 240 160 T 360 160 T 480 160 T 600 160 T 720 160 T 840 160 T 960 160 T 1080 160 T 1200 160 T 1320 160 T 1440 160"
+            className="opacity-30"
+          />
+
+          {/* Original mid-section waves */}
           <path
             fill="none"
             stroke="currentColor"
@@ -53,6 +71,23 @@ export default function Home() {
             strokeWidth="3"
             d="M0 600c150 0 200-300 350-300s200 300 350 300 200-300 350-300 200 300 350 300"
             className="opacity-15"
+          />
+
+          {/* Bottom low frequency signal */}
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            d="M0 880 C 200 800, 400 960, 720 880 S 1240 960, 1440 880"
+            className="opacity-40"
+          />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeDasharray="4 6"
+            d="M0 900 C 300 980, 500 820, 720 900 S 1140 820, 1440 900"
+            className="opacity-20"
           />
         </svg>
       </div>
