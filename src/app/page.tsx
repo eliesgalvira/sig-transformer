@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-workbench relative overflow-hidden">
       {/* Background Signal Design */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20 hidden md:block" aria-hidden="true">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20" aria-hidden="true">
         <svg preserveAspectRatio="none" viewBox="0 0 1440 1000" className="w-full h-full text-purple-500">
           {/* Upper criss-crossing exotic signal */}
           <path
@@ -44,7 +44,6 @@ export default function Home() {
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            strokeDasharray="3 3"
             d="M0 160 Q 60 250, 120 160 T 240 160 T 360 160 T 480 160 T 600 160 T 720 160 T 840 160 T 960 160 T 1080 160 T 1200 160 T 1320 160 T 1440 160"
             className="opacity-30"
           />
@@ -61,7 +60,6 @@ export default function Home() {
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            strokeDasharray="4 4"
             d="M0 400C120 400 240 300 360 300s240 200 360 200 240-200 360-200 240 100 360 100"
             className="opacity-30"
           />
@@ -85,7 +83,6 @@ export default function Home() {
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            strokeDasharray="4 6"
             d="M0 900 C 300 980, 500 820, 720 900 S 1140 820, 1440 900"
             className="opacity-20"
           />
