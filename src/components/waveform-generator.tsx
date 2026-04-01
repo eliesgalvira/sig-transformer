@@ -143,7 +143,7 @@ export function WaveformGenerator() {
           <MousePointer2 />
           <AlertTitle className="text-purple-300 font-mono text-xs font-bold tracking-widest uppercase">Canvas Controls</AlertTitle>
           <AlertDescription className="text-xs text-purple-200/70 mt-1.5 font-mono">
-            Use your mouse wheel or pinch to zoom the graphs.
+            To zoom in or zoom out on the graphs use your mouse wheel, two-finger scroll on touchpad or pinch with your fingers on mobile.
           </AlertDescription>
         </Alert>
       </CardHeader>
