@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Select,
   SelectContent,
@@ -94,6 +95,64 @@ const displayTextClass = 'font-mono text-xs font-bold tracking-widest uppercase'
 const bodyTextClass = 'font-mono text-xs leading-relaxed';
 const controlTextClass = 'font-mono text-xs font-medium tracking-[0.12em] uppercase';
 
+const getFrequencyTooltip = (shape: WaveformShape): string => {
+  switch (shape) {
+    case 'square':
+      return 'Sets the width of the square pulse.';
+    case 'triangle':
+      return 'Sets the base width of the triangle pulse.';
+    case 'exp':
+    case 'sign':
+      return 'This field is currently ignored for the selected waveform.';
+    default:
+      return 'Controls how quickly the function oscillates across the interval.';
+  }
+};
+
+const getPhaseTooltip = (shape: WaveformShape): string => {
+  switch (shape) {
+    case 'square':
+    case 'triangle':
+      return 'Shifts the waveform left or right on the x-axis.';
+    case 'exp':
+    case 'sign':
+      return 'This field is currently ignored for the selected waveform.';
+    default:
+      return 'Offsets the waveform horizontally within each cycle.';
+  }
+};
+
+function ParameterLabel({
+  htmlFor,
+  tooltip,
+  children,
+}: {
+  htmlFor: string;
+  tooltip: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <FieldLabel htmlFor={htmlFor} className={cn(displayTextClass, 'text-neutral-400')}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            tabIndex={0}
+            className="cursor-help underline decoration-dotted underline-offset-4 outline-none focus-visible:text-neutral-200"
+          >
+            {children}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          className="border-neutral-700/50 bg-neutral-950 text-neutral-200 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        >
+          <p className={cn(bodyTextClass, 'max-w-52 text-neutral-200')}>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </FieldLabel>
+  );
+}
+
 export function WaveformGenerator() {
   const { generateSignal, isLoading } = useSignal();
   const [storedForm, setStoredForm] = useLocalStorage<StoredSignalParams>(
@@ -138,33 +197,34 @@ export function WaveformGenerator() {
   };
 
   return (
-    <Card className="text-white border-neutral-700/40 bg-neutral-800/50 backdrop-blur-sm h-full flex flex-col border-none shadow-none rounded-none">
-      <CardHeader className="pb-4 pt-6 px-6">
-        <CardTitle className={cn(displayTextClass, 'text-neutral-100')}>
-          Function Generator
-        </CardTitle>
-        <CardDescription className={cn(displayTextClass, 'text-neutral-500')}>
-          Parametrized functions
-        </CardDescription>
-        <Alert className="mt-4 border-purple-500/30 bg-purple-500/10 text-purple-200 shadow-[inset_0_0_10px_rgba(168,85,247,0.05)]">
-          <MousePointer2 />
-          <AlertTitle className={cn(displayTextClass, 'text-purple-300')}>
-            Canvas Controls
-          </AlertTitle>
-          <AlertDescription className={cn(bodyTextClass, 'mt-1.5 text-purple-200/70')}>
-            To zoom in or zoom out on the graphs use your mouse wheel, two-finger scroll on touchpad or pinch with your fingers on mobile.
-          </AlertDescription>
-        </Alert>
-      </CardHeader>
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
-        <CardContent className="px-6 flex-1 flex flex-col">
-          <FieldGroup className="gap-4">
+    <TooltipProvider>
+      <Card className="text-white border-neutral-700/40 bg-neutral-800/50 backdrop-blur-sm h-full flex flex-col border-none shadow-none rounded-none">
+        <CardHeader className="pb-4 pt-6 px-6">
+          <CardTitle className={cn(displayTextClass, 'text-neutral-100')}>
+            Function Generator
+          </CardTitle>
+          <CardDescription className={cn(displayTextClass, 'text-neutral-500')}>
+            Parametrized functions
+          </CardDescription>
+          <Alert className="mt-4 border-purple-500/30 bg-purple-500/10 text-purple-200 shadow-[inset_0_0_10px_rgba(168,85,247,0.05)]">
+            <MousePointer2 />
+            <AlertTitle className={cn(displayTextClass, 'text-purple-300')}>
+              Canvas Controls
+            </AlertTitle>
+            <AlertDescription className={cn(bodyTextClass, 'mt-1.5 text-purple-200/70')}>
+              To zoom in or zoom out on the graphs use your mouse wheel, two-finger scroll on touchpad or pinch with your fingers on mobile.
+            </AlertDescription>
+          </Alert>
+        </CardHeader>
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
+          <CardContent className="px-6 flex-1 flex flex-col">
+            <FieldGroup className="gap-4">
             {/* Row 1: Start and End */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <FieldLabel htmlFor="start" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="start" tooltip="Sets where the sampled interval begins.">
                   Start:
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="start"
@@ -177,9 +237,9 @@ export function WaveformGenerator() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="end" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="end" tooltip="Sets where the sampled interval ends.">
                   End:
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="end"
@@ -196,9 +256,9 @@ export function WaveformGenerator() {
             {/* Row 2: Waveform and Amplitude */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <FieldLabel htmlFor="waveform" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="waveform" tooltip="Chooses which function shape will be generated.">
                   Waveform:
-                </FieldLabel>
+                </ParameterLabel>
                 <Select value={form.waveform} onValueChange={(v) => updateForm({ waveform: v as WaveformShape })}>
                   <SelectTrigger
                     id="waveform"
@@ -232,9 +292,9 @@ export function WaveformGenerator() {
                 </Select>
               </Field>
               <Field>
-                <FieldLabel htmlFor="amplitude" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="amplitude" tooltip="Controls the height or strength of the waveform.">
                   Amplitude (A):
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="amplitude"
@@ -251,9 +311,9 @@ export function WaveformGenerator() {
             {/* Row 3: Frequency and Phase */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <FieldLabel htmlFor="frequency" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="frequency" tooltip={getFrequencyTooltip(form.waveform)}>
                   {frequencyLabel}
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="frequency"
@@ -266,9 +326,9 @@ export function WaveformGenerator() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="phase" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="phase" tooltip={getPhaseTooltip(form.waveform)}>
                   {phaseLabel}
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="phase"
@@ -285,9 +345,9 @@ export function WaveformGenerator() {
             {/* Row 4: Interval and Frequency Range */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <FieldLabel htmlFor="interval" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel htmlFor="interval" tooltip="Sets the sampling step between generated points.">
                   Interval (T):
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="interval"
@@ -300,9 +360,12 @@ export function WaveformGenerator() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="bandwidth" className={cn(displayTextClass, 'text-neutral-400')}>
+                <ParameterLabel
+                  htmlFor="bandwidth"
+                  tooltip="Limits how much of the frequency spectrum is displayed."
+                >
                   BW (&lt;= {maxBandwidth} Hz):
-                </FieldLabel>
+                </ParameterLabel>
                 <Input
                   type="number"
                   id="bandwidth"
@@ -315,81 +378,82 @@ export function WaveformGenerator() {
                 />
               </Field>
             </div>
-          </FieldGroup>
+            </FieldGroup>
 
-          {/* Decorative Hardware Interface Panel */}
-          <div className="mt-auto mb-auto p-2 rounded-lg bg-[#111111] border border-neutral-800 shadow-[inset_0_4px_10px_rgba(0,0,0,0.6)] flex items-end justify-between relative overflow-hidden">
-            {/* Ventilation grill pattern top right */}
-            <div className="absolute top-2 right-2 flex gap-1 z-0 opacity-20">
-              <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
-              <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
-              <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
-              <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
-            </div>
+            {/* Decorative Hardware Interface Panel */}
+            <div className="mt-auto mb-auto p-2 rounded-lg bg-[#111111] border border-neutral-800 shadow-[inset_0_4px_10px_rgba(0,0,0,0.6)] flex items-end justify-between relative overflow-hidden">
+              {/* Ventilation grill pattern top right */}
+              <div className="absolute top-2 right-2 flex gap-1 z-0 opacity-20">
+                <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
+                <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
+                <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
+                <div className="w-1 h-6 bg-neutral-950 rounded-full"></div>
+              </div>
 
-            <div className="flex flex-col gap-2 z-10 w-full pl-1">
-              <div className="flex justify-between items-end w-full">
-                {/* Left Side: Mock Hard Buttons */}
-                <div className="grid grid-cols-2 gap-2 mb-1 pointer-events-none">
-                  {['Mod', 'Sweep', 'Burst', 'Utility'].map((label) => (
-                    <div key={label} className="h-5 w-12 rounded-sm bg-neutral-800 border-b-2 border-neutral-950 border-x border-x-neutral-700 border-t border-t-neutral-600 flex items-center justify-center shadow-sm">
-                      <span className="text-[8px] font-mono font-bold text-neutral-400 capitalize tracking-tighter">{label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                 {/* Center/Right Side: Hardware Ports (BNC Connectors) */}
-                <div className="flex gap-5 pr-2 pointer-events-none">
-                  {/* Active Channel */}
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div className="text-[8px] font-mono font-bold text-purple-400/90 bg-purple-500/10 px-1.5 rounded-[2px] border border-purple-500/30 mb-0.5 shadow-[0_0_5px_rgba(168,85,247,0.2)]">CH 1</div>
-                    <div className="h-10 w-10 rounded-full bg-neutral-950 flex items-center justify-center border-[3px] border-purple-500/60 shadow-[0_0_12px_rgba(168,85,247,0.2),inset_0_0_10px_rgba(0,0,0,1)] relative">
-                      {/* Inner BNC Ring */}
-                      <div className="h-[22px] w-[22px] rounded-full bg-neutral-800 border border-neutral-500 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] relative">
-                         {/* Core pin */}
-                        <div className="h-1.5 w-1.5 rounded-full bg-purple-100 shadow-[0_0_3px_rgba(255,255,255,0.8)]"></div>
-                         {/* Bayonet nubs */}
-                        <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-400 rounded-[1px]"></div>
-                        <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-400 rounded-[1px]"></div>
+              <div className="flex flex-col gap-2 z-10 w-full pl-1">
+                <div className="flex justify-between items-end w-full">
+                  {/* Left Side: Mock Hard Buttons */}
+                  <div className="grid grid-cols-2 gap-2 mb-1 pointer-events-none">
+                    {['Mod', 'Sweep', 'Burst', 'Utility'].map((label) => (
+                      <div key={label} className="h-5 w-12 rounded-sm bg-neutral-800 border-b-2 border-neutral-950 border-x border-x-neutral-700 border-t border-t-neutral-600 flex items-center justify-center shadow-sm">
+                        <span className="text-[8px] font-mono font-bold text-neutral-400 capitalize tracking-tighter">{label}</span>
                       </div>
-                    </div>
-                    <div className="text-[7px] font-mono text-neutral-500 mt-1">50Ω</div>
+                    ))}
                   </div>
 
-                  {/* Inactive Channel */}
-                  <div className="flex flex-col items-center gap-0.5 opacity-50 relative">
-                    <div className="text-[8px] font-mono font-bold text-neutral-400 bg-neutral-800 px-1.5 rounded-[2px] border border-neutral-700 mb-0.5">CH 2</div>
-                    <div className="h-10 w-10 rounded-full bg-neutral-950 flex items-center justify-center border-[3px] border-yellow-500/30 shadow-[inset_0_0_10px_rgba(0,0,0,1)] relative">
-                      <div className="h-[22px] w-[22px] rounded-full bg-neutral-800 border border-neutral-500 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] relative">
-                        <div className="h-1.5 w-1.5 rounded-full bg-zinc-400"></div>
-                        <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-500 rounded-[1px]"></div>
-                        <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-500 rounded-[1px]"></div>
+                  {/* Center/Right Side: Hardware Ports (BNC Connectors) */}
+                  <div className="flex gap-5 pr-2 pointer-events-none">
+                    {/* Active Channel */}
+                    <div className="flex flex-col items-center gap-0.5">
+                      <div className="text-[8px] font-mono font-bold text-purple-400/90 bg-purple-500/10 px-1.5 rounded-[2px] border border-purple-500/30 mb-0.5 shadow-[0_0_5px_rgba(168,85,247,0.2)]">CH 1</div>
+                      <div className="h-10 w-10 rounded-full bg-neutral-950 flex items-center justify-center border-[3px] border-purple-500/60 shadow-[0_0_12px_rgba(168,85,247,0.2),inset_0_0_10px_rgba(0,0,0,1)] relative">
+                        {/* Inner BNC Ring */}
+                        <div className="h-[22px] w-[22px] rounded-full bg-neutral-800 border border-neutral-500 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] relative">
+                          {/* Core pin */}
+                          <div className="h-1.5 w-1.5 rounded-full bg-purple-100 shadow-[0_0_3px_rgba(255,255,255,0.8)]"></div>
+                          {/* Bayonet nubs */}
+                          <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-400 rounded-[1px]"></div>
+                          <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-400 rounded-[1px]"></div>
+                        </div>
                       </div>
+                      <div className="text-[7px] font-mono text-neutral-500 mt-1">50Ω</div>
                     </div>
-                    <div className="text-[7px] font-mono text-neutral-500 mt-1">HighZ</div>
+
+                    {/* Inactive Channel */}
+                    <div className="flex flex-col items-center gap-0.5 opacity-50 relative">
+                      <div className="text-[8px] font-mono font-bold text-neutral-400 bg-neutral-800 px-1.5 rounded-[2px] border border-neutral-700 mb-0.5">CH 2</div>
+                      <div className="h-10 w-10 rounded-full bg-neutral-950 flex items-center justify-center border-[3px] border-yellow-500/30 shadow-[inset_0_0_10px_rgba(0,0,0,1)] relative">
+                        <div className="h-[22px] w-[22px] rounded-full bg-neutral-800 border border-neutral-500 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] relative">
+                          <div className="h-1.5 w-1.5 rounded-full bg-zinc-400"></div>
+                          <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-500 rounded-[1px]"></div>
+                          <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1.5 bg-neutral-500 rounded-[1px]"></div>
+                        </div>
+                      </div>
+                      <div className="text-[7px] font-mono text-neutral-500 mt-1">HighZ</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-center pt-2 border-t-0">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-9 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 disabled:opacity-50 font-mono text-xs font-bold tracking-widest uppercase"
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-t-purple-400 border-purple-400/30 rounded-full animate-spin" />
-                Generating...
-              </span>
-            ) : (
-              'Generate function'
-            )}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+          </CardContent>
+          <CardFooter className="flex justify-center pt-2 border-t-0">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-9 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-200 disabled:opacity-50 font-mono text-xs font-bold tracking-widest uppercase"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-3.5 h-3.5 border-2 border-t-purple-400 border-purple-400/30 rounded-full animate-spin" />
+                  Generating...
+                </span>
+              ) : (
+                'Generate function'
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </TooltipProvider>
   );
 }
