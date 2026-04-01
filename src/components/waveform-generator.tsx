@@ -333,7 +333,7 @@ export function WaveformGenerator() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center pt-2">
+        <CardFooter className="flex justify-center pt-2 border-t-0">
           <Button
             type="submit"
             disabled={isLoading}
