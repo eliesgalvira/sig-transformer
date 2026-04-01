@@ -131,8 +131,8 @@ export function WaveformGenerator() {
   };
 
   return (
-    <Card className="text-white border-neutral-700/40 bg-neutral-800/50 backdrop-blur-sm">
-      <CardHeader className="pb-4">
+    <Card className="text-white border-neutral-700/40 bg-neutral-800/50 backdrop-blur-sm h-full flex flex-col border-none shadow-none rounded-none">
+      <CardHeader className="pb-4 pt-6 px-6">
         <CardTitle className="text-lg font-semibold text-neutral-100">
           Function Generator
         </CardTitle>
@@ -141,8 +141,8 @@ export function WaveformGenerator() {
           Use your mouse wheel or pinch to zoom the graphs.
         </p>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent>
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
+        <CardContent className="px-6">
           <FieldGroup className="gap-4">
             {/* Row 1: Start and End */}
             <div className="grid grid-cols-2 gap-3">
@@ -271,7 +271,7 @@ export function WaveformGenerator() {
             </div>
           </FieldGroup>
         </CardContent>
-        <CardFooter className="flex justify-center pt-2">
+        <CardFooter className="flex justify-center pt-8">
           <Button
             type="submit"
             disabled={isLoading}

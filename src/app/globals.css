@@ -143,6 +143,17 @@
   .duration-600 {
     transition-duration: 600ms;
   }
+  
+  .bg-workbench {
+    background-color: #0f1115;
+    background-image: 
+      linear-gradient(rgba(45, 212, 191, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45, 212, 191, 0.05) 1px, transparent 1px),
+      linear-gradient(rgba(45, 212, 191, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45, 212, 191, 0.08) 1px, transparent 1px);
+    background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  }
 }
 
 /* MathJax styling */
