@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { Popover as PopoverPrimitive } from 'radix-ui';
 import { useLocalStorage } from 'usehooks-ts';
 import { useSignal } from '@/contexts/signal-context';
 import { MousePointer2 } from 'lucide-react';
@@ -7,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Select,
@@ -94,6 +96,8 @@ const clampBandwidth = (bandwidth: string, maxBandwidth: number): string => {
 const displayTextClass = 'font-mono text-xs font-bold tracking-widest uppercase';
 const bodyTextClass = 'font-mono text-xs leading-relaxed';
 const controlTextClass = 'font-mono text-xs font-medium tracking-[0.12em] uppercase';
+const overlayClassName =
+  'z-50 max-w-56 rounded-none border border-neutral-700/50 bg-neutral-950 px-3 py-1.5 text-neutral-200 shadow-[0_10px_30px_rgba(0,0,0,0.45)]';
 
 const getFrequencyTooltip = (shape: WaveformShape): string => {
   switch (shape) {
@@ -122,34 +126,74 @@ const getPhaseTooltip = (shape: WaveformShape): string => {
   }
 };
 
+function useSupportsHover(): boolean {
+  const [supportsHover, setSupportsHover] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const update = () => setSupportsHover(mediaQuery.matches);
+
+    update();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', update);
+
+      return () => mediaQuery.removeEventListener('change', update);
+    }
+
+    mediaQuery.addListener(update);
+
+    return () => mediaQuery.removeListener(update);
+  }, []);
+
+  return supportsHover;
+}
+
+function ParameterHelpText({ tooltip }: { tooltip: string }) {
+  return <p className={cn(bodyTextClass, 'max-w-52 text-neutral-200')}>{tooltip}</p>;
+}
+
 function ParameterLabel({
-  htmlFor,
+  fieldId,
   tooltip,
   children,
 }: {
-  htmlFor: string;
+  fieldId: string;
   tooltip: string;
   children: React.ReactNode;
 }) {
+  const labelId = `${fieldId}-label`;
+  const supportsHover = useSupportsHover();
+  const trigger = (
+    <button
+      type="button"
+      id={labelId}
+      className="cursor-help bg-transparent p-0 text-left underline decoration-dotted underline-offset-4 outline-none focus-visible:text-neutral-200"
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <FieldLabel htmlFor={htmlFor} className={cn(displayTextClass, 'text-neutral-400')}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            tabIndex={0}
-            className="cursor-help underline decoration-dotted underline-offset-4 outline-none focus-visible:text-neutral-200"
-          >
-            {children}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          className="border-neutral-700/50 bg-neutral-950 text-neutral-200 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
-        >
-          <p className={cn(bodyTextClass, 'max-w-52 text-neutral-200')}>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </FieldLabel>
+    <FieldTitle className={cn(displayTextClass, 'text-neutral-400')}>
+      {supportsHover ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+          <TooltipContent side="top" className={overlayClassName}>
+            <ParameterHelpText tooltip={tooltip} />
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <PopoverPrimitive.Root>
+          <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
+          <PopoverPrimitive.Portal>
+            <PopoverPrimitive.Content side="top" sideOffset={6} className={overlayClassName}>
+              <ParameterHelpText tooltip={tooltip} />
+            </PopoverPrimitive.Content>
+          </PopoverPrimitive.Portal>
+        </PopoverPrimitive.Root>
+      )}
+    </FieldTitle>
   );
 }
 
@@ -222,12 +266,13 @@ export function WaveformGenerator() {
             {/* Row 1: Start and End */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <ParameterLabel htmlFor="start" tooltip="Sets where the sampled interval begins.">
+                <ParameterLabel fieldId="start" tooltip="Sets where the sampled interval begins.">
                   Start:
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="start"
+                  aria-labelledby="start-label"
                   value={form.start}
                   onChange={(e) => updateForm({ start: e.target.value })}
                   step="0.1"
@@ -237,12 +282,13 @@ export function WaveformGenerator() {
                 />
               </Field>
               <Field>
-                <ParameterLabel htmlFor="end" tooltip="Sets where the sampled interval ends.">
+                <ParameterLabel fieldId="end" tooltip="Sets where the sampled interval ends.">
                   End:
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="end"
+                  aria-labelledby="end-label"
                   value={form.end}
                   onChange={(e) => updateForm({ end: e.target.value })}
                   step="0.1"
@@ -256,12 +302,13 @@ export function WaveformGenerator() {
             {/* Row 2: Waveform and Amplitude */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <ParameterLabel htmlFor="waveform" tooltip="Chooses which function shape will be generated.">
+                <ParameterLabel fieldId="waveform" tooltip="Chooses which function shape will be generated.">
                   Waveform:
                 </ParameterLabel>
                 <Select value={form.waveform} onValueChange={(v) => updateForm({ waveform: v as WaveformShape })}>
                   <SelectTrigger
                     id="waveform"
+                    aria-labelledby="waveform-label"
                     className="h-8 bg-neutral-900/60 border-neutral-700/50 text-neutral-200 focus:border-purple-500/50 focus:ring-purple-500/20 font-mono text-xs font-medium tracking-[0.12em] uppercase"
                   >
                     <SelectValue placeholder="Select waveform" />
@@ -292,12 +339,13 @@ export function WaveformGenerator() {
                 </Select>
               </Field>
               <Field>
-                <ParameterLabel htmlFor="amplitude" tooltip="Controls the height or strength of the waveform.">
+                <ParameterLabel fieldId="amplitude" tooltip="Controls the height or strength of the waveform.">
                   Amplitude (A):
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="amplitude"
+                  aria-labelledby="amplitude-label"
                   value={form.amplitude}
                   onChange={(e) => updateForm({ amplitude: e.target.value })}
                   step="0.1"
@@ -311,12 +359,13 @@ export function WaveformGenerator() {
             {/* Row 3: Frequency and Phase */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <ParameterLabel htmlFor="frequency" tooltip={getFrequencyTooltip(form.waveform)}>
+                <ParameterLabel fieldId="frequency" tooltip={getFrequencyTooltip(form.waveform)}>
                   {frequencyLabel}
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="frequency"
+                  aria-labelledby="frequency-label"
                   value={form.frequency}
                   onChange={(e) => updateForm({ frequency: e.target.value })}
                   step="0.1"
@@ -326,12 +375,13 @@ export function WaveformGenerator() {
                 />
               </Field>
               <Field>
-                <ParameterLabel htmlFor="phase" tooltip={getPhaseTooltip(form.waveform)}>
+                <ParameterLabel fieldId="phase" tooltip={getPhaseTooltip(form.waveform)}>
                   {phaseLabel}
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="phase"
+                  aria-labelledby="phase-label"
                   value={form.phase}
                   onChange={(e) => updateForm({ phase: e.target.value })}
                   step="0.01"
@@ -345,12 +395,13 @@ export function WaveformGenerator() {
             {/* Row 4: Interval and Frequency Range */}
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <ParameterLabel htmlFor="interval" tooltip="Sets the sampling step between generated points.">
+                <ParameterLabel fieldId="interval" tooltip="Sets the sampling step between generated points.">
                   Interval (T):
                 </ParameterLabel>
                 <Input
                   type="number"
                   id="interval"
+                  aria-labelledby="interval-label"
                   value={form.interval}
                   onChange={(e) => updateForm({ interval: e.target.value })}
                   step="0.01"
@@ -361,7 +412,7 @@ export function WaveformGenerator() {
               </Field>
               <Field>
                 <ParameterLabel
-                  htmlFor="bandwidth"
+                  fieldId="bandwidth"
                   tooltip="Limits how much of the frequency spectrum is displayed."
                 >
                   BW (&lt;= {maxBandwidth} Hz):
@@ -369,6 +420,7 @@ export function WaveformGenerator() {
                 <Input
                   type="number"
                   id="bandwidth"
+                  aria-labelledby="bandwidth-label"
                   value={form.bandwidth}
                   onChange={(e) => updateForm({ bandwidth: e.target.value })}
                   step="0.1"
