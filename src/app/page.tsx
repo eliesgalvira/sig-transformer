@@ -113,7 +113,7 @@ export default function Home() {
              <h2 className="text-purple-400/80 font-mono text-sm tracking-widest font-bold">DOCUMENTATION MODULES</h2>
              <div className="h-px bg-purple-500/30 flex-1"></div>
           </div>
-          <ul role="list" className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-0">
+          <ul role="list" className="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 p-0">
             <InfoCard
               href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"
               title="DFT Analysis"
@@ -128,10 +128,13 @@ export default function Home() {
         </div>
 
         {/* Footer credits */}
-        <footer className="w-full text-center text-xs text-neutral-600 mt-12 mb-4 px-4 font-mono border-t border-purple-500/20 pt-8 flex flex-col sm:flex-row items-center justify-between">
-          <span>SYS.RENDER: <Link href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener noreferrer" className="text-purple-500/70 hover:text-purple-400 transition-colors">lightweight-charts</Link></span>
-          <span className="hidden sm:inline-block w-2 h-2 rounded-full bg-purple-500/50 animate-pulse"></span>
-          <span>SYS.CALC: <Link href="https://www.fftw.org/" target="_blank" rel="noopener noreferrer" className="text-purple-500/70 hover:text-purple-400 transition-colors">fftw3</Link></span>
+        <footer className="w-full text-center text-xs text-neutral-600 mt-12 mb-4 px-4 font-mono border-t border-purple-500/20 pt-8 flex items-center justify-center">
+          <span>
+            Charts made with{' '}
+            <Link href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener noreferrer" className="text-purple-500/70 hover:text-purple-400 transition-colors">
+              lightweight-charts
+            </Link>
+          </span>
         </footer>
       </main>
     </div>
