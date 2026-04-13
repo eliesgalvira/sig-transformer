@@ -31,6 +31,17 @@ const StoredSignalParamsSchema = Schema.Struct({
   freqrange: NumericLikeSchema,
 });
 
+const StoredSignalDraftSchema = Schema.Struct({
+  start: NumericLikeSchema,
+  end: NumericLikeSchema,
+  waveform: WaveformShapeSchema,
+  amplitude: NumericLikeSchema,
+  frequency: NumericLikeSchema,
+  phase: NumericLikeSchema,
+  interval: NumericLikeSchema,
+  bandwidth: NumericLikeSchema,
+});
+
 export interface SignalDraft {
   start: string;
   end: string;
@@ -90,7 +101,22 @@ export function decodeStoredSignalParams(input: unknown): SignalParams {
 }
 
 export function decodeStoredSignalDraft(input: unknown): SignalDraft {
-  return sanitizeSignalDraft(toSignalDraft(decodeStoredSignalParams(input)));
+  try {
+    const storedDraft = Schema.decodeUnknownSync(StoredSignalDraftSchema)(input);
+
+    return sanitizeSignalDraft({
+      start: String(storedDraft.start),
+      end: String(storedDraft.end),
+      waveform: storedDraft.waveform,
+      amplitude: String(storedDraft.amplitude),
+      frequency: String(storedDraft.frequency),
+      phase: String(storedDraft.phase),
+      interval: String(storedDraft.interval),
+      bandwidth: String(storedDraft.bandwidth),
+    });
+  } catch {
+    return sanitizeSignalDraft(toSignalDraft(decodeStoredSignalParams(input)));
+  }
 }
 
 export function getMaxBandwidth(start: string, end: string, interval: string): number {

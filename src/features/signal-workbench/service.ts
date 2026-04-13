@@ -28,7 +28,18 @@ import { rowsToSignalData } from './selectors';
 const JsonValueFromString = Schema.fromJsonString(Schema.Unknown);
 
 function logNonBlockingError(error: WorkbenchError): void {
-  console.error(`[signal-workbench] ${error._tag}`, error);
+  switch (error._tag) {
+    case 'InvalidStoredSignalParamsError':
+      console.warn(`[signal-workbench] ignoring invalid stored state for "${error.key}"`);
+      break;
+    case 'LocalStorageReadError':
+    case 'LocalStorageWriteError':
+      console.warn(`[signal-workbench] storage access issue for "${error.key}"`);
+      break;
+    default:
+      console.error(`[signal-workbench] ${error._tag}`, error);
+      break;
+  }
 }
 
 function readStorageItem(key: string) {
