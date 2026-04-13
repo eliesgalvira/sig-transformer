@@ -327,6 +327,21 @@ html[data-workbench-theme='cream'] {
       box-shadow 240ms ease;
   }
 
+  .wb-menu-action {
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .wb-menu-action:hover {
+    transform: translateY(-1px);
+    border-color: var(--wb-accent);
+    box-shadow: 0 12px 24px var(--wb-accent-ghost);
+  }
+
   .wb-menu-grid {
     background-image:
       linear-gradient(var(--wb-grid-major) 1px, transparent 1px),
