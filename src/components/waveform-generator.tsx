@@ -207,25 +207,25 @@ export function WaveformGenerator() {
                     <SelectValue placeholder="Select waveform" />
                   </SelectTrigger>
                   <SelectContent className="wb-menu-panel border">
-                    <SelectItem value="square" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="square" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       Square
                     </SelectItem>
-                    <SelectItem value="triangle" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="triangle" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       Triangle
                     </SelectItem>
-                    <SelectItem value="sinc" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="sinc" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       Sinc
                     </SelectItem>
-                    <SelectItem value="cos" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="cos" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       Cosine
                     </SelectItem>
-                    <SelectItem value="sin" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="sin" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       Sine
                     </SelectItem>
-                    <SelectItem value="exp" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="exp" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       exp
                     </SelectItem>
-                    <SelectItem value="sign" className={cn(controlTextClass, 'wb-text focus:bg-[var(--wb-accent-soft)] focus:text-[var(--wb-accent-strong)]')}>
+                    <SelectItem value="sign" className={cn(controlTextClass, 'wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]')}>
                       sign
                     </SelectItem>
                   </SelectContent>

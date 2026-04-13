@@ -168,8 +168,8 @@ html[data-workbench-theme='cream'] {
   --wb-panel-strong: #efe3cf;
   --wb-panel-soft: rgba(244, 233, 216, 0.96);
   --wb-chart-bg: #f7efe2;
-  --wb-input-bg: rgba(247, 238, 223, 0.96);
-  --wb-input-border: rgba(156, 129, 112, 0.34);
+  --wb-input-bg: rgba(255, 252, 246, 0.98);
+  --wb-input-border: rgba(156, 129, 112, 0.28);
   --wb-border: rgba(127, 95, 108, 0.28);
   --wb-border-soft: rgba(156, 129, 112, 0.24);
   --wb-text: #352c29;
