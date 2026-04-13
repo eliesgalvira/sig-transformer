@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Popover as PopoverPrimitive } from 'radix-ui';
-import { useLocalStorage } from 'usehooks-ts';
 import { useSignal } from '@/contexts/signal-context';
-import { MousePointer2 } from 'lucide-react';
+import { AlertTriangle, MousePointer2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,113 +17,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DEFAULT_PARAMS, type SignalParams, type WaveformShape } from '@/lib/types/signal';
 import {
-  STORAGE_KEY,
+  getFrequencyTooltip,
   getFrequencyLabel,
+  getMaxBandwidth,
+  getPhaseTooltip,
   getPhaseLabel,
-  calculateDynamicMax,
-} from '@/lib/signal/handler';
+  type SignalDraft,
+} from '@/features/signal-workbench';
+import type { WaveformShape } from '@/lib/types/signal';
 import { cn } from '@/lib/utils';
-
-type StoredSignalParams = {
-  a: string | number;
-  b: string | number;
-  signalShape: WaveformShape;
-  amplitude: string | number;
-  frequency: string | number;
-  phase: string | number;
-  interval: string | number;
-  freqrange: string | number;
-};
-
-type FormState = {
-  start: string;
-  end: string;
-  waveform: WaveformShape;
-  amplitude: string;
-  frequency: string;
-  phase: string;
-  interval: string;
-  bandwidth: string;
-};
-
-const toFormState = (params: StoredSignalParams): FormState => ({
-  start: String(params.a),
-  end: String(params.b),
-  waveform: params.signalShape,
-  amplitude: String(params.amplitude),
-  frequency: String(params.frequency),
-  phase: String(params.phase),
-  interval: String(params.interval),
-  bandwidth: String(params.freqrange),
-});
-
-const toStoredSignalParams = (form: FormState): StoredSignalParams => ({
-  a: form.start,
-  b: form.end,
-  signalShape: form.waveform,
-  amplitude: form.amplitude,
-  frequency: form.frequency,
-  phase: form.phase,
-  interval: form.interval,
-  freqrange: form.bandwidth,
-});
-
-const getMaxBandwidth = (start: string, end: string, interval: string): number => {
-  const a = parseFloat(start);
-  const b = parseFloat(end);
-  const currentInterval = parseFloat(interval);
-
-  if (isNaN(a) || isNaN(b) || isNaN(currentInterval) || currentInterval <= 0) {
-    return 50;
-  }
-
-  return calculateDynamicMax(a, b, currentInterval);
-};
-
-const clampBandwidth = (bandwidth: string, maxBandwidth: number): string => {
-  const value = parseFloat(bandwidth);
-
-  if (isNaN(value)) {
-    return bandwidth;
-  }
-
-  return Math.min(value, maxBandwidth).toString();
-};
 
 const displayTextClass = 'font-mono text-xs font-bold tracking-widest uppercase';
 const bodyTextClass = 'font-mono text-xs leading-relaxed';
 const controlTextClass = 'font-mono text-xs font-medium tracking-[0.12em] uppercase';
 const overlayClassName =
   'z-50 max-w-56 rounded-none border border-neutral-700/50 bg-neutral-950 px-3 py-1.5 text-neutral-200 shadow-[0_10px_30px_rgba(0,0,0,0.45)]';
-
-const getFrequencyTooltip = (shape: WaveformShape): string => {
-  switch (shape) {
-    case 'square':
-      return 'Sets the width of the square pulse.';
-    case 'triangle':
-      return 'Sets the base width of the triangle pulse.';
-    case 'exp':
-    case 'sign':
-      return 'This field is currently ignored for the selected waveform.';
-    default:
-      return 'Controls how quickly the function oscillates across the interval.';
-  }
-};
-
-const getPhaseTooltip = (shape: WaveformShape): string => {
-  switch (shape) {
-    case 'square':
-    case 'triangle':
-      return 'Shifts the waveform left or right on the x-axis.';
-    case 'exp':
-    case 'sign':
-      return 'This field is currently ignored for the selected waveform.';
-    default:
-      return 'Offsets the waveform horizontally within each cycle.';
-  }
-};
 
 function useSupportsHover(): boolean {
   const [supportsHover, setSupportsHover] = useState(false);
@@ -198,46 +106,20 @@ function ParameterLabel({
 }
 
 export function WaveformGenerator() {
-  const { generateSignal, isLoading } = useSignal();
-  const [storedForm, setStoredForm] = useLocalStorage<StoredSignalParams>(
-    STORAGE_KEY,
-    DEFAULT_PARAMS,
-    { initializeWithValue: false }
-  );
-  const form = toFormState(storedForm);
+  const { draft, errorMessage, isLoading, status, submitDraft, updateDraft } = useSignal();
+  const form = draft;
 
   // Dynamic labels based on waveform
   const frequencyLabel = getFrequencyLabel(form.waveform);
   const phaseLabel = getPhaseLabel(form.waveform);
   const maxBandwidth = getMaxBandwidth(form.start, form.end, form.interval);
 
-  const updateForm = (updates: Partial<FormState>) => {
-    setStoredForm((current) => {
-      const next = { ...toFormState(current), ...updates };
-      const nextMaxBandwidth = getMaxBandwidth(next.start, next.end, next.interval);
-
-      return toStoredSignalParams({
-        ...next,
-        bandwidth: clampBandwidth(next.bandwidth, nextMaxBandwidth),
-      });
-    });
-  };
+  const updateForm = (updates: Partial<SignalDraft>) => updateDraft(updates);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const params: SignalParams = {
-      a: parseFloat(form.start),
-      b: parseFloat(form.end),
-      signalShape: form.waveform,
-      amplitude: parseFloat(form.amplitude),
-      frequency: parseFloat(form.frequency),
-      phase: parseFloat(form.phase),
-      interval: parseFloat(form.interval),
-      freqrange: parseFloat(clampBandwidth(form.bandwidth, maxBandwidth)),
-    };
 
-    await generateSignal(params);
+    await submitDraft();
   };
 
   return (
@@ -259,6 +141,17 @@ export function WaveformGenerator() {
               To zoom in or zoom out on the graphs use your mouse wheel, two-finger scroll on touchpad or pinch with your fingers on mobile.
             </AlertDescription>
           </Alert>
+          {errorMessage ? (
+            <Alert className="mt-4 border-red-500/30 bg-red-500/10 text-red-100 shadow-[inset_0_0_10px_rgba(239,68,68,0.05)]">
+              <AlertTriangle />
+              <AlertTitle className={cn(displayTextClass, 'text-red-200')}>
+                Workbench State
+              </AlertTitle>
+              <AlertDescription className={cn(bodyTextClass, 'mt-1.5 text-red-100/80')}>
+                {errorMessage}
+              </AlertDescription>
+            </Alert>
+          ) : null}
         </CardHeader>
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
           <CardContent className="px-6 flex-1 flex flex-col">
@@ -497,7 +390,7 @@ export function WaveformGenerator() {
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-3.5 h-3.5 border-2 border-t-purple-400 border-purple-400/30 rounded-full animate-spin" />
-                  Generating...
+                  {status === 'booting' ? 'Loading...' : 'Generating...'}
                 </span>
               ) : (
                 'Generate function'

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSignal } from '@/contexts/signal-context';
-import { useSignalData } from '@/hooks/use-signal-data';
 import { useLightweightChart } from '@/hooks/use-lightweight-chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { SignalParams, OutputType } from '@/lib/types/signal';
@@ -89,9 +88,9 @@ export function SignalChart() {
 
   const inputSymbolNameRef = useRef('');
   const outputSymbolNameRef = useRef('');
+  const [isChartRefreshing, setIsChartRefreshing] = useState(true);
 
-  const { signalParams, isLoading, outputType, updateVersion, setOutputType } = useSignal();
-  const { getData, isDbReady } = useSignalData();
+  const { signalParams, isLoading, outputType, updateVersion, setOutputType, loadSignalData } = useSignal();
 
   const commonChartOptions = useMemo<DeepPartial<ChartOptions>>(() => {
     const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
@@ -186,7 +185,9 @@ export function SignalChart() {
 
   // Update charts when signal params change
   useEffect(() => {
-    if (!signalParams || !isDbReady) return;
+    let isActive = true;
+
+    setIsChartRefreshing(true);
 
     const updateCharts = async () => {
       try {
@@ -194,28 +195,37 @@ export function SignalChart() {
         inputSymbolNameRef.current = inputSymbolName;
         outputSymbolNameRef.current = outputSymbolName;
 
-        const frequencyLimit = signalParams.freqrange || 10;
-        const { inputSignal, outputSignalSliced } = await getData(frequencyLimit, outputType);
+        const { inputSignal, outputSignalSliced } = await loadSignalData(outputType);
 
         setInputChartData(inputSignal);
         setOutputChartData(outputSignalSliced);
 
         requestAnimationFrame(() => {
+          if (!isActive) {
+            return;
+          }
           updateInputLegendManual(undefined);
           updateOutputLegendManual(undefined);
+          setIsChartRefreshing(false);
         });
       } catch (error) {
         console.error('Error updating chart data:', error);
+        if (isActive) {
+          setIsChartRefreshing(false);
+        }
       }
     };
 
-    updateCharts();
+    void updateCharts();
+
+    return () => {
+      isActive = false;
+    };
   }, [
     signalParams,
-    isDbReady,
     outputType,
     updateVersion,
-    getData,
+    loadSignalData,
     setInputChartData,
     setOutputChartData,
     updateInputLegendManual,
@@ -231,7 +241,7 @@ export function SignalChart() {
   return (
     <div id="chart-root" className="relative w-full h-full flex flex-col p-4 pt-10 gap-4 overflow-hidden">
       {/* Loading overlay */}
-      {isLoading && (
+      {(isLoading || isChartRefreshing) && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#171717]/95 backdrop-blur-sm z-20 rounded-lg pointer-events-none">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-t-purple-400 border-purple-400/20 rounded-full animate-spin"></div>

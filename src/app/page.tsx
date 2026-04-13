@@ -96,7 +96,7 @@ export default function Home() {
           <span className="relative">Signal Workbench</span>
         </h1>
         <p className="text-purple-400/80 md:text-base text-sm font-mono tracking-widest mb-2 uppercase text-sm">
-          // signal transformer tool by Elies
+          {'// signal transformer tool by Elies'}
         </p>
         <Link
           href="https://www.github.com/eliesgalvira/sig-transformer"
