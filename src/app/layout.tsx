@@ -36,8 +36,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" data-workbench-theme="dark" suppressHydrationWarning>
       <head>
+        <Script id="workbench-theme-init" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                var storedTheme = window.localStorage.getItem('workbench-theme');
+                var theme = storedTheme === 'cream' ? 'cream' : 'dark';
+                document.documentElement.dataset.workbenchTheme = theme;
+              } catch (error) {
+                document.documentElement.dataset.workbenchTheme = 'dark';
+              }
+            })();
+          `}
+        </Script>
         <Script id="mathjax-config" strategy="beforeInteractive">
           {`
             window.MathJax = {

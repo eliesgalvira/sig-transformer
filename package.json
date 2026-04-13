@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "prepare": "node scripts/prepare-effect-language-service.cjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
@@ -18,6 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
+    "effect": "4.0.0-beta.48",
     "fft.js": "^4.0.4",
     "lightweight-charts": "^5.0.9",
     "lucide-react": "^0.555.0",
@@ -25,10 +28,10 @@
     "radix-ui": "1.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwind-merge": "^3.4.0",
-    "usehooks-ts": "3.1.1"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@effect/language-service": "0.85.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
