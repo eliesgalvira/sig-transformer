@@ -44,8 +44,10 @@ export default function RootLayout({
               try {
                 var storedTheme = window.localStorage.getItem('workbench-theme');
                 var theme = storedTheme === 'cream' ? 'cream' : 'dark';
+                document.documentElement.classList.toggle('dark', theme === 'dark');
                 document.documentElement.dataset.workbenchTheme = theme;
               } catch (error) {
+                document.documentElement.classList.add('dark');
                 document.documentElement.dataset.workbenchTheme = 'dark';
               }
             })();

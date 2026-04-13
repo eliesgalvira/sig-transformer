@@ -20,6 +20,7 @@ export function applyWorkbenchTheme(theme: WorkbenchTheme): void {
     return;
   }
 
+  document.documentElement.classList.toggle('dark', theme === 'dark');
   document.documentElement.dataset.workbenchTheme = theme;
   window.localStorage.setItem(WORKBENCH_THEME_KEY, theme);
   window.dispatchEvent(
