@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSignal } from '@/contexts/signal-context';
+import { useWorkbenchTheme } from '@/hooks/use-workbench-theme';
 import { useLightweightChart } from '@/hooks/use-lightweight-chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { SignalParams, OutputType } from '@/lib/types/signal';
@@ -88,9 +89,37 @@ export function SignalChart() {
 
   const inputSymbolNameRef = useRef('');
   const outputSymbolNameRef = useRef('');
-  const [isChartRefreshing, setIsChartRefreshing] = useState(true);
+  const [renderedChartKey, setRenderedChartKey] = useState<string | null>(null);
 
   const { signalParams, isLoading, outputType, updateVersion, setOutputType, loadSignalData } = useSignal();
+  const { theme } = useWorkbenchTheme();
+  const chartKey = `${theme}:${outputType}:${updateVersion}:${signalParams.signalShape}:${signalParams.freqrange}`;
+  const isCreamTheme = theme === 'cream';
+
+  const chartPalette = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return {
+        text: isCreamTheme ? '#352c29' : '#ffffff',
+        background: isCreamTheme ? '#f7efe2' : '#17181f',
+        line: isCreamTheme ? '#8e5d76' : '#d5b8f9',
+        fill: isCreamTheme ? 'rgba(142, 93, 118, 0.22)' : 'rgba(213, 184, 249, 0.5)',
+        fillStrong: isCreamTheme
+          ? 'rgba(142, 93, 118, 0.16)'
+          : 'rgba(143, 67, 234, 0.33)',
+      };
+    }
+
+    const styles = window.getComputedStyle(document.documentElement);
+
+    return {
+      text: styles.getPropertyValue('--wb-chart-text').trim() || '#ffffff',
+      background: styles.getPropertyValue('--wb-chart-bg').trim() || '#17181f',
+      line: styles.getPropertyValue('--wb-chart-line').trim() || '#d5b8f9',
+      fill: styles.getPropertyValue('--wb-chart-fill').trim() || 'rgba(213, 184, 249, 0.5)',
+      fillStrong:
+        styles.getPropertyValue('--wb-chart-fill-strong').trim() || 'rgba(143, 67, 234, 0.33)',
+    };
+  }, [isCreamTheme]);
 
   const commonChartOptions = useMemo<DeepPartial<ChartOptions>>(() => {
     const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
@@ -103,8 +132,8 @@ export function SignalChart() {
     return {
       autoSize: true,
       layout: {
-        textColor: 'white',
-        background: { type: ColorType.Solid, color: '#171717' },
+        textColor: chartPalette.text,
+        background: { type: ColorType.Solid, color: chartPalette.background },
         attributionLogo: false,
       },
       localization: {
@@ -133,32 +162,32 @@ export function SignalChart() {
       handleScroll: true,
       handleScale: true,
     };
-  }, []);
+  }, [chartPalette]);
 
   const inputSeriesOptions = useMemo<DeepPartial<AreaSeriesOptions>>(
     () => ({
-      topColor: '#d5b8f9',
-      bottomColor: 'rgba(213, 184, 249, 0.5)',
-      lineColor: '#d5b8f9',
+      topColor: chartPalette.line,
+      bottomColor: chartPalette.fill,
+      lineColor: chartPalette.line,
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: false,
       priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
     }),
-    []
+    [chartPalette]
   );
 
   const outputSeriesOptions = useMemo<DeepPartial<AreaSeriesOptions>>(
     () => ({
-      topColor: '#d5b8f9',
-      bottomColor: 'rgba(143, 67, 234, 0.33)',
-      lineColor: '#d5b8f9',
+      topColor: chartPalette.line,
+      bottomColor: chartPalette.fillStrong,
+      lineColor: chartPalette.line,
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: false,
       priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
     }),
-    []
+    [chartPalette]
   );
 
   const {
@@ -187,8 +216,6 @@ export function SignalChart() {
   useEffect(() => {
     let isActive = true;
 
-    setIsChartRefreshing(true);
-
     const updateCharts = async () => {
       try {
         const { inputSymbolName, outputSymbolName } = formatLegend(signalParams, outputType);
@@ -206,13 +233,10 @@ export function SignalChart() {
           }
           updateInputLegendManual(undefined);
           updateOutputLegendManual(undefined);
-          setIsChartRefreshing(false);
+          setRenderedChartKey(chartKey);
         });
       } catch (error) {
         console.error('Error updating chart data:', error);
-        if (isActive) {
-          setIsChartRefreshing(false);
-        }
       }
     };
 
@@ -225,6 +249,7 @@ export function SignalChart() {
     signalParams,
     outputType,
     updateVersion,
+    chartKey,
     loadSignalData,
     setInputChartData,
     setOutputChartData,
@@ -241,11 +266,13 @@ export function SignalChart() {
   return (
     <div id="chart-root" className="relative w-full h-full flex flex-col p-4 pt-10 gap-4 overflow-hidden">
       {/* Loading overlay */}
-      {(isLoading || isChartRefreshing) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#171717]/95 backdrop-blur-sm z-20 rounded-lg pointer-events-none">
+      {(isLoading || renderedChartKey !== chartKey) && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-[var(--wb-chart-bg)] backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-t-purple-400 border-purple-400/20 rounded-full animate-spin"></div>
-            <p className="text-purple-400/80 text-xs font-mono font-bold tracking-widest uppercase">Processing signal data...</p>
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--wb-accent-soft)] border-t-[var(--wb-accent)]"></div>
+            <p className="font-mono text-xs font-bold tracking-widest uppercase wb-accent">
+              Processing signal data...
+            </p>
           </div>
         </div>
       )}
@@ -258,15 +285,15 @@ export function SignalChart() {
         <div
           id="inputLegend"
           ref={inputLegendRef}
-          className="absolute left-0 top-0 z-10 font-mono text-xs font-light text-neutral-300 p-2 rounded pointer-events-none max-w-[80vw] md:max-w-xl break-words"
+          className="pointer-events-none absolute left-0 top-0 z-10 max-w-[80vw] break-words rounded p-2 font-mono text-xs font-light wb-text md:max-w-xl"
         />
       </div>
 
       <Tabs value={outputType} onValueChange={handleTabChange} className="w-fit z-10 my-2 shrink-0">
-        <TabsList className="h-8 bg-neutral-900/50 border border-purple-500/20 p-0.5">
-          <TabsTrigger value="real" className="h-7 px-3 text-xs font-mono font-medium text-neutral-500 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 transition-colors uppercase tracking-wider">Real</TabsTrigger>
-          <TabsTrigger value="imaginary" className="h-7 px-3 text-xs font-mono font-medium text-neutral-500 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 transition-colors uppercase tracking-wider">Imaginary</TabsTrigger>
-          <TabsTrigger value="modulus" className="h-7 px-3 text-xs font-mono font-medium text-neutral-500 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 data-[state=active]:border-purple-500/30 transition-colors uppercase tracking-wider">Modulus</TabsTrigger>
+        <TabsList className="wb-panel flex h-8 border p-0.5">
+          <TabsTrigger value="real" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Real</TabsTrigger>
+          <TabsTrigger value="imaginary" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Imaginary</TabsTrigger>
+          <TabsTrigger value="modulus" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Modulus</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -278,7 +305,7 @@ export function SignalChart() {
         <div
           id="outputLegend"
           ref={outputLegendRef}
-          className="absolute left-0 top-0 z-10 font-mono text-xs font-light text-neutral-300 p-2 rounded pointer-events-none max-w-[80vw] md:max-w-xl break-words"
+          className="pointer-events-none absolute left-0 top-0 z-10 max-w-[80vw] break-words rounded p-2 font-mono text-xs font-light wb-text md:max-w-xl"
         />
       </div>
     </div>

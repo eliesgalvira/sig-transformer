@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { existsSync } = require('node:fs');
 const { join } = require('node:path');
 const { spawnSync } = require('node:child_process');
