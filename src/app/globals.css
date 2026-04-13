@@ -339,6 +339,8 @@ html[data-workbench-theme='cream'] {
   .wb-menu-action:hover {
     transform: translateY(-1px);
     border-color: var(--wb-accent);
+    background-color: var(--wb-accent-ghost);
+    color: var(--wb-accent-strong);
     box-shadow: 0 12px 24px var(--wb-accent-ghost);
   }
 

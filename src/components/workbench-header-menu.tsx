@@ -43,7 +43,7 @@ export function WorkbenchHeaderMenu() {
         <button
           type="button"
           aria-label="Open workbench menu"
-          className="wb-focus-ring wb-menu-action group flex h-10 w-10 items-center justify-center rounded-[1.15rem] border wb-panel-soft wb-title backdrop-blur-md"
+          className="wb-focus-ring wb-menu-action group flex h-9 w-9 items-center justify-center rounded-[0.35rem] border wb-panel-soft wb-title backdrop-blur-md"
         >
           <HamburgerIcon open={open} />
         </button>
@@ -52,7 +52,7 @@ export function WorkbenchHeaderMenu() {
         <PopoverPrimitive.Content
           align="end"
           sideOffset={12}
-          className="wb-menu-panel wb-menu-grid relative z-50 w-[18rem] overflow-hidden rounded-[1.75rem] border p-4 text-sm backdrop-blur-xl"
+          className="wb-menu-panel wb-menu-grid relative z-50 w-[16.5rem] overflow-hidden rounded-[0.55rem] border p-3.5 text-sm backdrop-blur-xl"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--wb-accent)] to-transparent opacity-70" />
           <div className="flex items-start justify-between gap-3">
@@ -60,16 +60,16 @@ export function WorkbenchHeaderMenu() {
               <p className="font-mono text-[11px] font-bold uppercase tracking-[0.35em] wb-accent">
                 Access Panel
               </p>
-              <h2 className="mt-2 font-mono text-[1.65rem] font-bold uppercase tracking-[0.14em] wb-title">
+              <h2 className="mt-2 font-mono text-[1.45rem] font-bold uppercase tracking-[0.14em] wb-title">
                 Surface Controls
               </h2>
             </div>
-            <div className="rounded-full border px-2 py-1 text-[10px] font-mono uppercase tracking-[0.24em] wb-panel-soft wb-text-muted">
+            <div className="rounded-[0.35rem] border px-2 py-1 text-[10px] font-mono uppercase tracking-[0.22em] wb-panel-soft wb-text-muted">
               {theme}
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border p-3 wb-panel">
+          <div className="mt-4 rounded-[0.45rem] border p-3 wb-panel">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-mono text-[10px] font-bold uppercase tracking-[0.28em] wb-text-soft">
@@ -83,17 +83,17 @@ export function WorkbenchHeaderMenu() {
                 type="button"
                 aria-label="Toggle workbench theme"
                 onClick={() => setTheme(isCream ? 'dark' : 'cream')}
-                className="wb-focus-ring wb-menu-action wb-theme-track relative flex h-10 w-[5.25rem] items-center rounded-full border px-1"
+                className="wb-focus-ring wb-menu-action group wb-theme-track relative flex h-8 w-[4.5rem] items-center rounded-[0.45rem] border px-1"
               >
                 <span
                   className={cn(
-                    'wb-theme-thumb absolute left-1 flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-transform duration-300',
-                    isCream && 'translate-x-[2.75rem]'
+                    'wb-theme-thumb absolute left-1 flex h-6 w-6 items-center justify-center rounded-[0.3rem] border shadow-[0_6px_14px_rgba(0,0,0,0.12)] transition-transform duration-300 group-hover:border-[var(--wb-accent)]',
+                    isCream && 'translate-x-[2.25rem]'
                   )}
                 >
-                  {isCream ? <SunMedium className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
+                  {isCream ? <SunMedium className="h-3 w-3" /> : <MoonStar className="h-3 w-3" />}
                 </span>
-                <span className="flex w-full items-center justify-between px-2 text-[10px] font-mono font-bold uppercase tracking-[0.14em] wb-text-soft">
+                <span className="flex w-full items-center justify-between px-1.5 text-[9px] font-mono font-bold uppercase tracking-[0.1em] wb-text-soft group-hover:text-[var(--wb-accent)]">
                   <span>D</span>
                   <span>C</span>
                 </span>
@@ -105,7 +105,7 @@ export function WorkbenchHeaderMenu() {
             href="https://www.github.com/eliesgalvira/sig-transformer"
             target="_blank"
             rel="noopener noreferrer"
-            className="wb-focus-ring wb-menu-action mt-3 flex items-center justify-between rounded-2xl border p-3 wb-panel"
+            className="wb-focus-ring wb-menu-action group mt-3 flex items-center justify-between rounded-[0.45rem] border p-3 wb-panel"
           >
             <div>
               <p className="font-mono text-[10px] font-bold uppercase tracking-[0.28em] wb-text-soft">
@@ -115,8 +115,8 @@ export function WorkbenchHeaderMenu() {
                 Open on GitHub
               </p>
             </div>
-            <span className="flex h-8 w-8 items-center justify-center rounded-[1rem] border wb-panel-soft wb-accent">
-              <Github className="h-3.5 w-3.5" />
+            <span className="flex h-7 w-7 items-center justify-center rounded-[0.35rem] border wb-panel-soft wb-accent transition-colors duration-200 group-hover:border-[var(--wb-accent)] group-hover:bg-[var(--wb-accent-soft)] group-hover:text-[var(--wb-accent-strong)]">
+              <Github className="h-3 w-3" />
             </span>
           </Link>
         </PopoverPrimitive.Content>
