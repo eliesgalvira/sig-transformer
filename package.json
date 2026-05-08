@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "prepare": "node scripts/prepare-effect-language-service.cjs"
   },
@@ -20,11 +22,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
-    "effect": "4.0.0-beta.48",
-    "fft.js": "^4.0.4",
+    "effect": "4.0.0-beta.64",
     "lightweight-charts": "^5.0.9",
     "lucide-react": "^0.555.0",
     "next": "16.2.0",
+    "pragma-dsp": "0.1.0-alpha.3",
     "radix-ui": "1.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@effect/language-service": "0.85.1",
+    "@effect/vitest": "4.0.0-beta.64",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -40,7 +43,8 @@
     "eslint-config-next": "16.2.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.0.18"
   },
   "pnpm": {
     "overrides": {
