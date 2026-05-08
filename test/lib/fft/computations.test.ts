@@ -1,18 +1,25 @@
-import { Effect } from "effect";
+import * as Effect from "effect/Effect";
 import { describe, expect, it } from "@effect/vitest";
 import {
-  computeFFT,
-  computeFFTCos,
-  computeFFTExp,
-  computeFFTSign,
-  computeFFTSin,
-  computeFFTSinc,
-  computeFFTSquare,
-  computeFFTTriangle,
+  computeFFTEffect,
+  computeFFTCosEffect,
+  computeFFTExpEffect,
+  computeFFTSignEffect,
+  computeFFTSinEffect,
+  computeFFTSincEffect,
+  computeFFTSquareEffect,
+  computeFFTTriangleEffect,
+  type FFTComputationError,
 } from "@/lib/fft/computations";
-import type { FFTDataRow, SignalParams, WaveformShape } from "@/lib/types/signal";
+import type {
+  FFTDataRow,
+  SignalParams,
+  WaveformShape,
+} from "@/lib/types/signal";
 
-type ComputeFft = (params: SignalParams) => Promise<FFTDataRow[]>;
+type ComputeFft = (
+  params: SignalParams,
+) => Effect.Effect<FFTDataRow[], FFTComputationError>;
 
 type NamedCase = {
   readonly shape: WaveformShape;
@@ -33,7 +40,7 @@ const defaultParams = {
 const namedCases: ReadonlyArray<NamedCase> = [
   {
     shape: "square",
-    compute: computeFFTSquare,
+    compute: computeFFTSquareEffect,
     params: {
       ...defaultParams,
       signalShape: "square",
@@ -43,7 +50,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "triangle",
-    compute: computeFFTTriangle,
+    compute: computeFFTTriangleEffect,
     params: {
       ...defaultParams,
       signalShape: "triangle",
@@ -53,7 +60,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sinc",
-    compute: computeFFTSinc,
+    compute: computeFFTSincEffect,
     params: {
       ...defaultParams,
       signalShape: "sinc",
@@ -63,7 +70,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "cos",
-    compute: computeFFTCos,
+    compute: computeFFTCosEffect,
     params: {
       ...defaultParams,
       signalShape: "cos",
@@ -74,7 +81,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sin",
-    compute: computeFFTSin,
+    compute: computeFFTSinEffect,
     params: {
       ...defaultParams,
       signalShape: "sin",
@@ -85,7 +92,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "exp",
-    compute: computeFFTExp,
+    compute: computeFFTExpEffect,
     params: {
       ...defaultParams,
       signalShape: "exp",
@@ -96,7 +103,7 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sign",
-    compute: computeFFTSign,
+    compute: computeFFTSignEffect,
     params: {
       ...defaultParams,
       signalShape: "sign",
@@ -176,21 +183,28 @@ function sampleSignalValue(params: SignalParams, time: number): number {
 
   switch (signalShape) {
     case "square":
-      return Math.abs(centeredTime - phase) <= frequency / 2 + params.interval / 2
+      return Math.abs(centeredTime - phase) <=
+        frequency / 2 + params.interval / 2
         ? amplitude
         : 0;
     case "triangle":
-      return amplitude * Math.max(0, 1 - Math.abs(centeredTime - phase) / frequency);
+      return (
+        amplitude * Math.max(0, 1 - Math.abs(centeredTime - phase) / frequency)
+      );
     case "sinc": {
       const denominator = frequency * Math.PI * centeredTime - phase;
       return approximatelyZero(denominator)
         ? amplitude
-        : amplitude * Math.sin(denominator) / denominator;
+        : (amplitude * Math.sin(denominator)) / denominator;
     }
     case "cos":
-      return amplitude * Math.cos(2 * Math.PI * frequency * centeredTime + phase);
+      return (
+        amplitude * Math.cos(2 * Math.PI * frequency * centeredTime + phase)
+      );
     case "sin":
-      return amplitude * Math.sin(2 * Math.PI * frequency * centeredTime + phase);
+      return (
+        amplitude * Math.sin(2 * Math.PI * frequency * centeredTime + phase)
+      );
     case "exp":
       return amplitude * Math.exp(centeredTime);
     case "sign":
@@ -244,8 +258,12 @@ function createReferenceRows(params: SignalParams): FFTDataRow[] {
       "re(FFT)": roundLikeApp(reScaled, 5),
       "im(FFT)": roundLikeApp(imScaled, 5),
       "abs(FFT)": roundLikeApp(Math.hypot(reScaled, imScaled), 5),
-      input: Number.isFinite(inputTime) ? roundLikeApp(inputTime, 5) : inputTime,
-      "re(signal)": Number.isFinite(inputValue) ? roundLikeApp(inputValue, 5) : inputValue,
+      input: Number.isFinite(inputTime)
+        ? roundLikeApp(inputTime, 5)
+        : inputTime,
+      "re(signal)": Number.isFinite(inputValue)
+        ? roundLikeApp(inputValue, 5)
+        : inputValue,
     });
   }
 
@@ -275,7 +293,10 @@ function expectRowEqual(actual: FFTDataRow, expected: FFTDataRow): void {
   }
 }
 
-function maxAbsolute(rows: ReadonlyArray<FFTDataRow>, key: "re(FFT)" | "im(FFT)"): number {
+function maxAbsolute(
+  rows: ReadonlyArray<FFTDataRow>,
+  key: "re(FFT)" | "im(FFT)",
+): number {
   let max = 0;
 
   for (const row of rows) {
@@ -289,10 +310,7 @@ describe("computeFFT", () => {
   for (const testCase of namedCases) {
     it.effect(`matches the direct transform for ${testCase.shape}`, () =>
       Effect.gen(function* () {
-        const actualRows = yield* Effect.tryPromise({
-          try: () => computeFFT(testCase.params),
-          catch: (error) => error,
-        });
+        const actualRows = yield* computeFFTEffect(testCase.params);
         const expectedRows = createReferenceRows(testCase.params);
 
         expect(actualRows).toHaveLength(expectedRows.length);
@@ -300,54 +318,46 @@ describe("computeFFT", () => {
         for (let index = 0; index < actualRows.length; index += 1) {
           expectRowEqual(actualRows[index]!, expectedRows[index]!);
         }
-      })
+      }),
     );
   }
 
   for (const testCase of namedCases) {
     it.effect(`dispatches ${testCase.shape} to the dedicated entry point`, () =>
       Effect.gen(function* () {
-        const dispatchedRows = yield* Effect.tryPromise({
-          try: () => computeFFT(testCase.params),
-          catch: (error) => error,
-        });
-        const directRows = yield* Effect.tryPromise({
-          try: () => testCase.compute(testCase.params),
-          catch: (error) => error,
-        });
+        const dispatchedRows = yield* computeFFTEffect(testCase.params);
+        const directRows = yield* testCase.compute(testCase.params);
 
         expect(dispatchedRows).toHaveLength(directRows.length);
 
         for (let index = 0; index < dispatchedRows.length; index += 1) {
           expectRowEqual(dispatchedRows[index]!, directRows[index]!);
         }
-      })
+      }),
     );
   }
 
   for (const params of evenShapeCases) {
-    it.effect(`keeps the imaginary spectrum at numerical zero for centered ${params.signalShape}`, () =>
-      Effect.gen(function* () {
-        const rows = yield* Effect.tryPromise({
-          try: () => computeFFT(params),
-          catch: (error) => error,
-        });
+    it.effect(
+      `keeps the imaginary spectrum at numerical zero for centered ${params.signalShape}`,
+      () =>
+        Effect.gen(function* () {
+          const rows = yield* computeFFTEffect(params);
 
-        expect(maxAbsolute(rows, "im(FFT)")).toBe(0);
-      })
+          expect(maxAbsolute(rows, "im(FFT)")).toBe(0);
+        }),
     );
   }
 
   for (const params of oddShapeCases) {
-    it.effect(`keeps the real spectrum at numerical zero for centered ${params.signalShape}`, () =>
-      Effect.gen(function* () {
-        const rows = yield* Effect.tryPromise({
-          try: () => computeFFT(params),
-          catch: (error) => error,
-        });
+    it.effect(
+      `keeps the real spectrum at numerical zero for centered ${params.signalShape}`,
+      () =>
+        Effect.gen(function* () {
+          const rows = yield* computeFFTEffect(params);
 
-        expect(maxAbsolute(rows, "re(FFT)")).toBe(0);
-      })
+          expect(maxAbsolute(rows, "re(FFT)")).toBe(0);
+        }),
     );
   }
 });

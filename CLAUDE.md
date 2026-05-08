@@ -1,4 +1,5 @@
 <!-- effect-solutions:start -->
+
 ## Effect Best Practices
 
 **IMPORTANT:** Always consult effect-solutions before writing Effect code.
@@ -16,4 +17,5 @@ Never guess at Effect patterns - check the guide first.
 The Effect v4 repository is cloned to `~/.local/share/effect-solutions/effect` for reference.
 Use this to explore APIs, find usage examples, and understand implementation
 details when the documentation isn't enough.
+
 <!-- effect-solutions:end -->

@@ -1,15 +1,22 @@
-import Link from 'next/link';
-import { WaveformGenerator } from '@/components/waveform-generator';
-import { SignalChart } from '@/components/signal-chart';
-import { InfoCard } from '@/components/info-card';
-import { WorkbenchHeaderMenu } from '@/components/workbench-header-menu';
+import Link from "next/link";
+import { WaveformGenerator } from "@/components/waveform-generator";
+import { SignalChart } from "@/components/signal-chart";
+import { InfoCard } from "@/components/info-card";
+import { WorkbenchHeaderMenu } from "@/components/workbench-header-menu";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-workbench relative overflow-hidden">
       {/* Background Signal Design */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20" aria-hidden="true">
-        <svg preserveAspectRatio="none" viewBox="0 0 1440 1000" className="h-full w-full text-[var(--wb-wave)]">
+      <div
+        className="absolute inset-0 z-0 pointer-events-none opacity-20"
+        aria-hidden="true"
+      >
+        <svg
+          preserveAspectRatio="none"
+          viewBox="0 0 1440 1000"
+          className="h-full w-full text-[var(--wb-wave)]"
+        >
           {/* Upper criss-crossing exotic signal */}
           <path
             fill="none"
@@ -78,7 +85,7 @@ export default function Home() {
             <span className="relative">Signal Workbench</span>
           </h1>
           <p className="wb-subtitle text-sm font-mono tracking-widest uppercase md:text-base">
-            {'// signal transformer tool by Elies'}
+            {"// signal transformer tool by Elies"}
           </p>
         </div>
       </header>
@@ -89,12 +96,12 @@ export default function Home() {
           {/* Left column - Challenge card and Form */}
           <div className="md:col-span-4 flex flex-col justify-start">
             <div className="wb-panel relative flex h-full min-h-[620px] flex-col overflow-hidden border p-1 shadow-[0_0_20px_rgba(0,0,0,0.18)] backdrop-blur-md md:min-h-[720px]">
-               {/* Techy corner accents */}
-               <div className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[var(--wb-accent)]"></div>
-               <div className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[var(--wb-accent)]"></div>
-               <div className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[var(--wb-accent)]"></div>
-               <div className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[var(--wb-accent)]"></div>
-               <WaveformGenerator />
+              {/* Techy corner accents */}
+              <div className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[var(--wb-accent)]"></div>
+              <div className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[var(--wb-accent)]"></div>
+              <div className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[var(--wb-accent)]"></div>
+              <div className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[var(--wb-accent)]"></div>
+              <WaveformGenerator />
             </div>
           </div>
 
@@ -105,9 +112,9 @@ export default function Home() {
                 OSCILLOSCOPE VIEW
               </div>
               <div className="w-full flex-1 relative z-10 flex flex-col overflow-hidden min-h-0">
-                 {/* CRT Scanline effect overlaid on chart container */}
-                 <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.12)_50%),linear-gradient(90deg,rgba(255,0,0,0.04),rgba(0,255,0,0.02),rgba(0,0,255,0.04))] bg-[length:100%_4px,3px_100%] opacity-25"></div>
-                 <SignalChart />
+                {/* CRT Scanline effect overlaid on chart container */}
+                <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.12)_50%),linear-gradient(90deg,rgba(255,0,0,0.04),rgba(0,255,0,0.02),rgba(0,0,255,0.04))] bg-[length:100%_4px,3px_100%] opacity-25"></div>
+                <SignalChart />
               </div>
             </div>
           </div>
@@ -116,11 +123,16 @@ export default function Home() {
         {/* Info Cards */}
         <div className="w-full mt-12 mb-8 relative">
           <div className="flex items-center gap-4 mb-6">
-             <div className="h-px flex-1 bg-[var(--wb-border)]"></div>
-             <h2 className="font-mono text-sm font-bold tracking-widest wb-accent">DOCUMENTATION MODULES</h2>
-             <div className="h-px flex-1 bg-[var(--wb-border)]"></div>
+            <div className="h-px flex-1 bg-[var(--wb-border)]"></div>
+            <h2 className="font-mono text-sm font-bold tracking-widest wb-accent">
+              DOCUMENTATION MODULES
+            </h2>
+            <div className="h-px flex-1 bg-[var(--wb-border)]"></div>
           </div>
-          <ul role="list" className="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 p-0">
+          <ul
+            role="list"
+            className="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 p-0"
+          >
             <InfoCard
               href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"
               title="DFT Analysis"
@@ -137,8 +149,13 @@ export default function Home() {
         {/* Footer credits */}
         <footer className="mt-12 mb-4 flex w-full items-center justify-center border-t px-4 pt-8 text-center font-mono text-xs wb-text-muted [border-color:var(--wb-border)]">
           <span>
-            Charts made with{' '}
-            <Link href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener noreferrer" className="transition-colors wb-accent hover:text-[var(--wb-accent-strong)]">
+            Charts made with{" "}
+            <Link
+              href="https://www.tradingview.com/lightweight-charts/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors wb-accent hover:text-[var(--wb-accent-strong)]"
+            >
               lightweight-charts
             </Link>
           </span>

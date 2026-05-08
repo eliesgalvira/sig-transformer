@@ -1,6 +1,15 @@
 import { nextPowerOfTwo } from "pragma-dsp/core";
 import { FFT } from "pragma-dsp/xform/fourier";
+import * as Effect from "effect/Effect";
+import * as Schema from "effect/Schema";
 import type { SignalParams, FFTDataRow } from "@/lib/types/signal";
+
+export class FFTComputationError extends Schema.TaggedErrorClass<FFTComputationError>()(
+  "FFTComputationError",
+  {
+    error: Schema.Defect,
+  },
+) {}
 
 type SignalSampler = (time: number, params: SignalParams) => number;
 
@@ -17,7 +26,7 @@ function approximatelyZero(value: number): boolean {
 }
 
 function validateBounds(params: SignalParams): void {
-  if (!(params.b - params.a > 0)) {
+  if (params.b - params.a <= 0) {
     throw new Error("Invalid interval: b - a must be > 0");
   }
 }
@@ -40,7 +49,7 @@ function applyTimeOriginCorrection(
   real: number,
   imag: number,
   frequency: number,
-  startTime: number
+  startTime: number,
 ) {
   const angle = -2 * Math.PI * frequency * startTime;
   const cos = Math.cos(angle);
@@ -52,7 +61,10 @@ function applyTimeOriginCorrection(
   };
 }
 
-function sampleSignal(params: SignalParams, sampler: SignalSampler): SampledSignal {
+function sampleSignal(
+  params: SignalParams,
+  sampler: SignalSampler,
+): SampledSignal {
   const totalSamples = Math.ceil((params.b - params.a) / params.interval) + 1;
   const paddedSize = nextPowerOfTwo(totalSamples);
   const realInput = new Float64Array(paddedSize);
@@ -79,7 +91,7 @@ function sampleSignal(params: SignalParams, sampler: SignalSampler): SampledSign
 function processFFTOutput(
   spectrum: { readonly real: Float64Array; readonly imag: Float64Array },
   sample: SampledSignal,
-  params: SignalParams
+  params: SignalParams,
 ): FFTDataRow[] {
   const center = Math.floor(sample.paddedSize / 2);
   const rows: FFTDataRow[] = [];
@@ -91,13 +103,15 @@ function processFFTOutput(
       spectrum.real[srcIdx] ?? 0,
       spectrum.imag[srcIdx] ?? 0,
       frequency,
-      params.a
+      params.a,
     );
 
     const real = corrected.real * params.interval;
     const imag = corrected.imag * params.interval;
-    const inputTime = k < sample.totalSamples ? sample.timeValues[k] : Number.NaN;
-    const inputValue = k < sample.totalSamples ? sample.signalValues[k] : Number.NaN;
+    const inputTime =
+      k < sample.totalSamples ? sample.timeValues[k] : Number.NaN;
+    const inputValue =
+      k < sample.totalSamples ? sample.signalValues[k] : Number.NaN;
 
     rows.push({
       Freq: roundTo(frequency, 2),
@@ -105,17 +119,19 @@ function processFFTOutput(
       "im(FFT)": roundTo(imag, 5),
       "abs(FFT)": roundTo(Math.hypot(real, imag), 5),
       input: Number.isFinite(inputTime) ? roundTo(inputTime, 5) : inputTime,
-      "re(signal)": Number.isFinite(inputValue) ? roundTo(inputValue, 5) : inputValue,
+      "re(signal)": Number.isFinite(inputValue)
+        ? roundTo(inputValue, 5)
+        : inputValue,
     });
   }
 
   return rows;
 }
 
-async function computeFFTFromSignal(
+function computeFFTFromSignal(
   params: SignalParams,
-  sampler: SignalSampler
-): Promise<FFTDataRow[]> {
+  sampler: SignalSampler,
+): FFTDataRow[] {
   validateBounds(params);
 
   const sampledSignal = sampleSignal(params, sampler);
@@ -148,7 +164,10 @@ function sampleTriangle(time: number, params: SignalParams): number {
 }
 
 function sampleSine(time: number, params: SignalParams): number {
-  return params.amplitude * Math.sin(2 * Math.PI * params.frequency * time + params.phase);
+  return (
+    params.amplitude *
+    Math.sin(2 * Math.PI * params.frequency * time + params.phase)
+  );
 }
 
 function sampleExponential(time: number, params: SignalParams): number {
@@ -168,54 +187,133 @@ function sampleSinc(time: number, params: SignalParams): number {
 }
 
 function sampleCosine(time: number, params: SignalParams): number {
-  return params.amplitude * Math.cos(2 * Math.PI * params.frequency * time + params.phase);
+  return (
+    params.amplitude *
+    Math.cos(2 * Math.PI * params.frequency * time + params.phase)
+  );
 }
 
-export async function computeFFTSquare(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTSquareSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleSquare);
 }
 
-export async function computeFFTSin(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTSinSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleSine);
 }
 
-export async function computeFFTExp(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTExpSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleExponential);
 }
 
-export async function computeFFTSign(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTSignSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, (time) => sampleSign(time));
 }
 
-export async function computeFFTSinc(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTSincSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleSinc);
 }
 
-export async function computeFFTCos(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTCosSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleCosine);
 }
 
-export async function computeFFTTriangle(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTTriangleSync(params: SignalParams): FFTDataRow[] {
   return computeFFTFromSignal(params, sampleTriangle);
 }
 
-export async function computeFFT(params: SignalParams): Promise<FFTDataRow[]> {
+export function computeFFTSync(params: SignalParams): FFTDataRow[] {
   switch (params.signalShape) {
     case "square":
-      return computeFFTSquare(params);
+      return computeFFTSquareSync(params);
     case "sinc":
-      return computeFFTSinc(params);
+      return computeFFTSincSync(params);
     case "cos":
-      return computeFFTCos(params);
+      return computeFFTCosSync(params);
     case "triangle":
-      return computeFFTTriangle(params);
+      return computeFFTTriangleSync(params);
     case "sin":
-      return computeFFTSin(params);
+      return computeFFTSinSync(params);
     case "exp":
-      return computeFFTExp(params);
+      return computeFFTExpSync(params);
     case "sign":
-      return computeFFTSign(params);
+      return computeFFTSignSync(params);
     default:
       throw new Error(`Unsupported waveform shape: ${params.signalShape}`);
   }
 }
+
+export const computeFFTEffect = Effect.fn("computeFFT")(function* (
+  params: SignalParams,
+) {
+  return yield* Effect.try({
+    try: () => computeFFTSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+});
+
+export const computeFFTSquareEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTSquareSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTSinEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTSinSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTExpEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTExpSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTSignEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTSignSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTSincEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTSincSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTCosEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTCosSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFTTriangleEffect = (params: SignalParams) =>
+  Effect.try({
+    try: () => computeFFTTriangleSync(params),
+    catch: (error) => new FFTComputationError({ error }),
+  });
+
+export const computeFFT = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTEffect(params));
+
+export const computeFFTSquare = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTSquareEffect(params));
+
+export const computeFFTSin = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTSinEffect(params));
+
+export const computeFFTExp = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTExpEffect(params));
+
+export const computeFFTSign = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTSignEffect(params));
+
+export const computeFFTSinc = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTSincEffect(params));
+
+export const computeFFTCos = (params: SignalParams): Promise<FFTDataRow[]> =>
+  Effect.runPromise(computeFFTCosEffect(params));
+
+export const computeFFTTriangle = (
+  params: SignalParams,
+): Promise<FFTDataRow[]> => Effect.runPromise(computeFFTTriangleEffect(params));

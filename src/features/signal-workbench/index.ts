@@ -4,7 +4,7 @@ export {
   persistSignalDraft,
   runSignalWorkbench,
   submitSignalDraft,
-} from './service';
+} from "./service";
 export {
   clampBandwidth,
   COMMITTED_STORAGE_KEY,
@@ -21,5 +21,5 @@ export {
   toSignalDraft,
   type SignalBootstrap,
   type SignalDraft,
-} from './model';
-export { describeWorkbenchError, type WorkbenchError } from './errors';
+} from "./model";
+export { describeWorkbenchError, type WorkbenchError } from "./errors";

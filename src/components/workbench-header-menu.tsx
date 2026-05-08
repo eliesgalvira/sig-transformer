@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { Popover as PopoverPrimitive } from 'radix-ui';
-import { Github, MoonStar, SunMedium } from 'lucide-react';
-import { useWorkbenchTheme } from '@/hooks/use-workbench-theme';
-import { cn } from '@/lib/utils';
+import Link from "next/link";
+import { useState } from "react";
+import { Popover as PopoverPrimitive } from "radix-ui";
+import { Github, MoonStar, SunMedium } from "lucide-react";
+import { useWorkbenchTheme } from "@/hooks/use-workbench-theme";
+import { cn } from "@/lib/utils";
 
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
     <span className="relative block h-3.5 w-4.5">
       <span
         className={cn(
-          'absolute left-0 top-0 h-[2px] w-4.5 rounded-full bg-current transition-all duration-300',
-          open && 'top-[6px] rotate-45'
+          "absolute left-0 top-0 h-[2px] w-4.5 rounded-full bg-current transition-all duration-300",
+          open && "top-[6px] rotate-45",
         )}
       />
       <span
         className={cn(
-          'absolute left-0 top-[6px] h-[2px] w-2.5 rounded-full bg-current transition-all duration-300',
-          open && 'w-0 opacity-0'
+          "absolute left-0 top-[6px] h-[2px] w-2.5 rounded-full bg-current transition-all duration-300",
+          open && "w-0 opacity-0",
         )}
       />
       <span
         className={cn(
-          'absolute left-0 top-[12px] h-[2px] w-4.5 rounded-full bg-current transition-all duration-300',
-          open && 'top-[6px] -rotate-45'
+          "absolute left-0 top-[12px] h-[2px] w-4.5 rounded-full bg-current transition-all duration-300",
+          open && "top-[6px] -rotate-45",
         )}
       />
     </span>
@@ -35,7 +35,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
 export function WorkbenchHeaderMenu() {
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useWorkbenchTheme();
-  const isCream = theme === 'cream';
+  const isCream = theme === "cream";
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -76,22 +76,26 @@ export function WorkbenchHeaderMenu() {
                   Theme
                 </p>
                 <p className="mt-1 font-mono text-xs uppercase tracking-[0.14em] wb-title">
-                  {isCream ? 'Cream Mode' : 'Dark Mode'}
+                  {isCream ? "Cream Mode" : "Dark Mode"}
                 </p>
               </div>
               <button
                 type="button"
                 aria-label="Toggle workbench theme"
-                onClick={() => setTheme(isCream ? 'dark' : 'cream')}
+                onClick={() => setTheme(isCream ? "dark" : "cream")}
                 className="wb-focus-ring wb-menu-action group wb-theme-track relative flex h-8 w-[4.5rem] items-center rounded-[0.45rem] border px-1"
               >
                 <span
                   className={cn(
-                    'wb-theme-thumb absolute left-1 flex h-6 w-6 items-center justify-center rounded-[0.3rem] border shadow-[0_6px_14px_rgba(0,0,0,0.12)] transition-transform duration-300 group-hover:border-[var(--wb-accent)]',
-                    isCream && 'translate-x-[2.25rem]'
+                    "wb-theme-thumb absolute left-1 flex h-6 w-6 items-center justify-center rounded-[0.3rem] border shadow-[0_6px_14px_rgba(0,0,0,0.12)] transition-transform duration-300 group-hover:border-[var(--wb-accent)]",
+                    isCream && "translate-x-[2.25rem]",
                   )}
                 >
-                  {isCream ? <SunMedium className="h-3 w-3" /> : <MoonStar className="h-3 w-3" />}
+                  {isCream ? (
+                    <SunMedium className="h-3 w-3" />
+                  ) : (
+                    <MoonStar className="h-3 w-3" />
+                  )}
                 </span>
                 <span className="flex w-full items-center justify-between px-1.5 text-[9px] font-mono font-bold uppercase tracking-[0.1em] wb-text-soft group-hover:text-[var(--wb-accent)]">
                   <span>D</span>

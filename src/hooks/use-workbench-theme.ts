@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   applyWorkbenchTheme,
   normalizeWorkbenchTheme,
@@ -8,10 +8,10 @@ import {
   WORKBENCH_THEME_EVENT,
   WORKBENCH_THEME_KEY,
   type WorkbenchTheme,
-} from '@/lib/workbench-theme';
+} from "@/lib/workbench-theme";
 
 export function useWorkbenchTheme() {
-  const [theme, setThemeState] = useState<WorkbenchTheme>('dark');
+  const [theme, setThemeState] = useState<WorkbenchTheme>("dark");
 
   useEffect(() => {
     const syncTheme = () => {
@@ -33,12 +33,18 @@ export function useWorkbenchTheme() {
       setThemeState(normalizeWorkbenchTheme(event.newValue));
     };
 
-    window.addEventListener(WORKBENCH_THEME_EVENT, handleThemeChange as EventListener);
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener(
+      WORKBENCH_THEME_EVENT,
+      handleThemeChange as EventListener,
+    );
+    window.addEventListener("storage", handleStorage);
 
     return () => {
-      window.removeEventListener(WORKBENCH_THEME_EVENT, handleThemeChange as EventListener);
-      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(
+        WORKBENCH_THEME_EVENT,
+        handleThemeChange as EventListener,
+      );
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 

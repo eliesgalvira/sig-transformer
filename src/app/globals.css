@@ -41,12 +41,13 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   /* Animation for gradient text */
   --animate-gradient: gradient 3s ease infinite;
-  
+
   @keyframes gradient {
-    0%, 100% {
+    0%,
+    100% {
       background-position: 0% 50%;
     }
     50% {
@@ -156,7 +157,7 @@
   --sidebar-ring: oklch(0.7 0.15 300);
 }
 
-html[data-workbench-theme='cream'] {
+html[data-workbench-theme="cream"] {
   --wb-bg: #f3ebdd;
   --wb-grid-minor: rgba(143, 117, 96, 0.11);
   --wb-grid-major: rgba(142, 93, 118, 0.09);
@@ -209,20 +210,28 @@ html[data-workbench-theme='cream'] {
     animation: gradient 3s ease infinite;
     background-size: 400% 400%;
   }
-  
+
   .duration-600 {
     transition-duration: 600ms;
   }
-  
+
   .bg-workbench {
     background-color: var(--wb-bg);
-    background-image: 
+    background-image:
       linear-gradient(var(--wb-grid-minor) 1px, transparent 1px),
       linear-gradient(90deg, var(--wb-grid-minor) 1px, transparent 1px),
       linear-gradient(var(--wb-grid-major) 1px, transparent 1px),
       linear-gradient(90deg, var(--wb-grid-major) 1px, transparent 1px);
-    background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
-    background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+    background-size:
+      20px 20px,
+      20px 20px,
+      100px 100px,
+      100px 100px;
+    background-position:
+      -1px -1px,
+      -1px -1px,
+      -1px -1px,
+      -1px -1px;
     transition:
       background-color 260ms ease,
       background-image 260ms ease;

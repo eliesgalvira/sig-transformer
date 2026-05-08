@@ -1,18 +1,30 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSignal } from '@/contexts/signal-context';
-import { useWorkbenchTheme } from '@/hooks/use-workbench-theme';
-import { useLightweightChart } from '@/hooks/use-lightweight-chart';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { SignalParams, OutputType } from '@/lib/types/signal';
-import { ColorType, type DeepPartial, type ChartOptions, type AreaSeriesOptions } from 'lightweight-charts';
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as Effect from "effect/Effect";
+import { useSignal } from "@/contexts/signal-context";
+import { useWorkbenchTheme } from "@/hooks/use-workbench-theme";
+import { useLightweightChart } from "@/hooks/use-lightweight-chart";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { SignalParams, OutputType } from "@/lib/types/signal";
+import {
+  ColorType,
+  type DeepPartial,
+  type ChartOptions,
+  type AreaSeriesOptions,
+} from "lightweight-charts";
 
-const formatLegend = (signalParams: SignalParams | null, outputType: OutputType = 'modulus') => {
-  if (!signalParams) {
-    return { inputSymbolName: '\\( \\textbf{x}[n] \\)', outputSymbolName: '\\( \\mathcal{F} \\)' };
+const formatLegend = (
+  signalParams: SignalParams | null,
+  outputType: OutputType = "modulus",
+) => {
+  if (signalParams === null) {
+    return {
+      inputSymbolName: "\\( \\textbf{x}[n] \\)",
+      outputSymbolName: "\\( \\mathcal{F} \\)",
+    };
   }
-  
+
   const { b, signalShape, amplitude, phase } = signalParams;
 
   const inputFormatters: Record<string, string> = {
@@ -36,40 +48,50 @@ const formatLegend = (signalParams: SignalParams | null, outputType: OutputType 
       sign: `\\( |\\mathcal{F}| = \\left| \\frac{2}{f} \\right| \\)`,
     },
     real: {
-      square: phase === 0
-        ? `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}(Pf) \\)`
-        : `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}(Pf)\\cos(2\\pi f X) \\)`,
-      triangle: phase === 0
-        ? `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}^2(Pf) \\)`
-        : `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}^2(Pf)\\cos(2\\pi f X) \\)`,
-      sinc: phase === 0
-        ? `\\( \\Re(\\mathcal{F}) = A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right) \\)`
-        : `\\( \\Re(\\mathcal{F}) = A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right)\\cos(2\\pi f \\varphi) \\)`,
-      cos: phase === 0
-        ? `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)] \\)`
-        : `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)]\\cos(\\varphi) \\)`,
-      sin: phase === 0
-        ? `\\( \\Re(\\mathcal{F}) = 0 \\)`
-        : `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)]\\cos(\\varphi) \\)`,
+      square:
+        phase === 0
+          ? `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}(Pf) \\)`
+          : `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}(Pf)\\cos(2\\pi f X) \\)`,
+      triangle:
+        phase === 0
+          ? `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}^2(Pf) \\)`
+          : `\\( \\Re(\\mathcal{F}) = A \\cdot P\\text{sinc}^2(Pf)\\cos(2\\pi f X) \\)`,
+      sinc:
+        phase === 0
+          ? `\\( \\Re(\\mathcal{F}) = A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right) \\)`
+          : `\\( \\Re(\\mathcal{F}) = A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right)\\cos(2\\pi f \\varphi) \\)`,
+      cos:
+        phase === 0
+          ? `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)] \\)`
+          : `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)]\\cos(\\varphi) \\)`,
+      sin:
+        phase === 0
+          ? `\\( \\Re(\\mathcal{F}) = 0 \\)`
+          : `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)]\\cos(\\varphi) \\)`,
       exp: `\\( \\Re(\\mathcal{F}) \\)`,
       sign: `\\( \\Re(\\mathcal{F}) = 0 \\)`,
     },
     imaginary: {
-      square: phase === 0
-        ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
-        : `\\( \\Im(\\mathcal{F}) = -A \\cdot P\\text{sinc}(Pf)\\sin(2\\pi f X) \\)`,
-      triangle: phase === 0
-        ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
-        : `\\( \\Im(\\mathcal{F}) = -A \\cdot P\\text{sinc}^2(Pf)\\sin(2\\pi f X) \\)`,
-      sinc: phase === 0
-        ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
-        : `\\( \\Im(\\mathcal{F}) = -A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right)\\sin(2\\pi f \\varphi) \\)`,
-      cos: phase === 0
-        ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
-        : `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)]\\sin(\\varphi) \\)`,
-      sin: phase === 0
-        ? `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)] \\)`
-        : `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)]\\sin(\\varphi) \\)`,
+      square:
+        phase === 0
+          ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
+          : `\\( \\Im(\\mathcal{F}) = -A \\cdot P\\text{sinc}(Pf)\\sin(2\\pi f X) \\)`,
+      triangle:
+        phase === 0
+          ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
+          : `\\( \\Im(\\mathcal{F}) = -A \\cdot P\\text{sinc}^2(Pf)\\sin(2\\pi f X) \\)`,
+      sinc:
+        phase === 0
+          ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
+          : `\\( \\Im(\\mathcal{F}) = -A \\cdot \\Pi\\left(\\frac{f}{f_0}\\right)\\sin(2\\pi f \\varphi) \\)`,
+      cos:
+        phase === 0
+          ? `\\( \\Im(\\mathcal{F}) = 0 \\)`
+          : `\\( \\Re(\\mathcal{F}) = \\frac{A}{2}[\\delta (f + f_0) + \\delta (f - f_0)]\\sin(\\varphi) \\)`,
+      sin:
+        phase === 0
+          ? `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)] \\)`
+          : `\\( \\Im(\\mathcal{F}) = - \\frac{A}{2}[\\delta (f - f_0) - \\delta (f + f_0)]\\sin(\\varphi) \\)`,
       exp: `\\( \\Im(\\mathcal{F}) \\)`,
       sign: `\\( \\Im(\\mathcal{F}) = -\\frac{2}{f} \\)`,
     },
@@ -77,7 +99,8 @@ const formatLegend = (signalParams: SignalParams | null, outputType: OutputType 
 
   return {
     inputSymbolName: inputFormatters[signalShape] || `\\( \\textbf{x}[n] \\)`,
-    outputSymbolName: outputFormatters[outputType]?.[signalShape] || `\\( \\mathcal{F} \\)`,
+    outputSymbolName:
+      outputFormatters[outputType]?.[signalShape] || `\\( \\mathcal{F} \\)`,
   };
 };
 
@@ -87,48 +110,61 @@ export function SignalChart() {
   const inputLegendRef = useRef<HTMLDivElement>(null);
   const outputLegendRef = useRef<HTMLDivElement>(null);
 
-  const inputSymbolNameRef = useRef('');
-  const outputSymbolNameRef = useRef('');
+  const inputSymbolNameRef = useRef("");
+  const outputSymbolNameRef = useRef("");
   const [renderedChartKey, setRenderedChartKey] = useState<string | null>(null);
 
-  const { signalParams, isLoading, outputType, updateVersion, setOutputType, loadSignalData } = useSignal();
+  const {
+    signalParams,
+    isLoading,
+    outputType,
+    updateVersion,
+    setOutputType,
+    loadSignalData,
+  } = useSignal();
   const { theme } = useWorkbenchTheme();
   const chartKey = `${theme}:${outputType}:${updateVersion}:${signalParams.signalShape}:${signalParams.freqrange}`;
-  const isCreamTheme = theme === 'cream';
+  const isCreamTheme = theme === "cream";
 
   const chartPalette = useMemo(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return {
-        text: isCreamTheme ? '#352c29' : '#ffffff',
-        background: isCreamTheme ? '#f7efe2' : '#17181f',
-        line: isCreamTheme ? '#8e5d76' : '#d5b8f9',
-        fill: isCreamTheme ? 'rgba(142, 93, 118, 0.22)' : 'rgba(213, 184, 249, 0.5)',
+        text: isCreamTheme ? "#352c29" : "#ffffff",
+        background: isCreamTheme ? "#f7efe2" : "#17181f",
+        line: isCreamTheme ? "#8e5d76" : "#d5b8f9",
+        fill: isCreamTheme
+          ? "rgba(142, 93, 118, 0.22)"
+          : "rgba(213, 184, 249, 0.5)",
         fillStrong: isCreamTheme
-          ? 'rgba(142, 93, 118, 0.16)'
-          : 'rgba(143, 67, 234, 0.33)',
+          ? "rgba(142, 93, 118, 0.16)"
+          : "rgba(143, 67, 234, 0.33)",
       };
     }
 
     const styles = window.getComputedStyle(document.documentElement);
 
     return {
-      text: styles.getPropertyValue('--wb-chart-text').trim() || '#ffffff',
-      background: styles.getPropertyValue('--wb-chart-bg').trim() || '#17181f',
-      line: styles.getPropertyValue('--wb-chart-line').trim() || '#d5b8f9',
-      fill: styles.getPropertyValue('--wb-chart-fill').trim() || 'rgba(213, 184, 249, 0.5)',
+      text: styles.getPropertyValue("--wb-chart-text").trim() || "#ffffff",
+      background: styles.getPropertyValue("--wb-chart-bg").trim() || "#17181f",
+      line: styles.getPropertyValue("--wb-chart-line").trim() || "#d5b8f9",
+      fill:
+        styles.getPropertyValue("--wb-chart-fill").trim() ||
+        "rgba(213, 184, 249, 0.5)",
       fillStrong:
-        styles.getPropertyValue('--wb-chart-fill-strong').trim() || 'rgba(143, 67, 234, 0.33)',
+        styles.getPropertyValue("--wb-chart-fill-strong").trim() ||
+        "rgba(143, 67, 234, 0.33)",
     };
   }, [isCreamTheme]);
 
   const commonChartOptions = useMemo<DeepPartial<ChartOptions>>(() => {
-    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+    const isSmallScreen =
+      typeof window !== "undefined" && window.innerWidth < 640;
     const formatTick = (v: number | string): string => {
-      const n = typeof v === 'number' ? v : parseFloat(v);
+      const n = typeof v === "number" ? v : parseFloat(v);
       if (!Number.isFinite(n)) return String(v);
       return (Math.round(n * 100) / 100).toFixed(2);
     };
-    
+
     return {
       autoSize: true,
       layout: {
@@ -172,9 +208,9 @@ export function SignalChart() {
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: false,
-      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+      priceFormat: { type: "price", precision: 3, minMove: 0.001 },
     }),
-    [chartPalette]
+    [chartPalette],
   );
 
   const outputSeriesOptions = useMemo<DeepPartial<AreaSeriesOptions>>(
@@ -185,21 +221,19 @@ export function SignalChart() {
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: false,
-      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+      priceFormat: { type: "price", precision: 3, minMove: 0.001 },
     }),
-    [chartPalette]
+    [chartPalette],
   );
 
-  const {
-    setData: setInputChartData,
-    updateLegend: updateInputLegendManual,
-  } = useLightweightChart(
-    container1Ref,
-    inputLegendRef,
-    inputSymbolNameRef,
-    commonChartOptions,
-    inputSeriesOptions
-  );
+  const { setData: setInputChartData, updateLegend: updateInputLegendManual } =
+    useLightweightChart(
+      container1Ref,
+      inputLegendRef,
+      inputSymbolNameRef,
+      commonChartOptions,
+      inputSeriesOptions,
+    );
 
   const {
     setData: setOutputChartData,
@@ -209,35 +243,39 @@ export function SignalChart() {
     outputLegendRef,
     outputSymbolNameRef,
     commonChartOptions,
-    outputSeriesOptions
+    outputSeriesOptions,
   );
 
   // Update charts when signal params change
   useEffect(() => {
     let isActive = true;
 
-    const updateCharts = async () => {
-      try {
-        const { inputSymbolName, outputSymbolName } = formatLegend(signalParams, outputType);
-        inputSymbolNameRef.current = inputSymbolName;
-        outputSymbolNameRef.current = outputSymbolName;
+    const updateCharts = () => {
+      const { inputSymbolName, outputSymbolName } = formatLegend(
+        signalParams,
+        outputType,
+      );
+      inputSymbolNameRef.current = inputSymbolName;
+      outputSymbolNameRef.current = outputSymbolName;
 
-        const { inputSignal, outputSignalSliced } = await loadSignalData(outputType);
+      void loadSignalData(outputType).then(
+        ({ inputSignal, outputSignalSliced }) => {
+          setInputChartData(inputSignal);
+          setOutputChartData(outputSignalSliced);
 
-        setInputChartData(inputSignal);
-        setOutputChartData(outputSignalSliced);
-
-        requestAnimationFrame(() => {
-          if (!isActive) {
-            return;
-          }
-          updateInputLegendManual(undefined);
-          updateOutputLegendManual(undefined);
-          setRenderedChartKey(chartKey);
-        });
-      } catch (error) {
-        console.error('Error updating chart data:', error);
-      }
+          requestAnimationFrame(() => {
+            if (!isActive) {
+              return;
+            }
+            updateInputLegendManual(undefined);
+            updateOutputLegendManual(undefined);
+            setRenderedChartKey(chartKey);
+          });
+        },
+        (error: unknown) => {
+          Effect.runFork(Effect.logError("Error updating chart data:", error));
+        },
+      );
     };
 
     void updateCharts();
@@ -264,7 +302,10 @@ export function SignalChart() {
   };
 
   return (
-    <div id="chart-root" className="relative w-full h-full flex flex-col p-4 pt-10 gap-4 overflow-hidden">
+    <div
+      id="chart-root"
+      className="relative w-full h-full flex flex-col p-4 pt-10 gap-4 overflow-hidden"
+    >
       {/* Loading overlay */}
       {(isLoading || renderedChartKey !== chartKey) && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-[var(--wb-chart-bg)] backdrop-blur-sm">
@@ -289,11 +330,30 @@ export function SignalChart() {
         />
       </div>
 
-      <Tabs value={outputType} onValueChange={handleTabChange} className="w-fit z-10 my-2 shrink-0">
+      <Tabs
+        value={outputType}
+        onValueChange={handleTabChange}
+        className="w-fit z-10 my-2 shrink-0"
+      >
         <TabsList className="wb-panel flex h-8 border p-0.5">
-          <TabsTrigger value="real" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Real</TabsTrigger>
-          <TabsTrigger value="imaginary" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Imaginary</TabsTrigger>
-          <TabsTrigger value="modulus" className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors">Modulus</TabsTrigger>
+          <TabsTrigger
+            value="real"
+            className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors"
+          >
+            Real
+          </TabsTrigger>
+          <TabsTrigger
+            value="imaginary"
+            className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors"
+          >
+            Imaginary
+          </TabsTrigger>
+          <TabsTrigger
+            value="modulus"
+            className="h-7 px-3 font-mono text-xs font-medium uppercase tracking-wider wb-text-muted data-[state=active]:bg-[var(--wb-accent-soft)] data-[state=active]:text-[var(--wb-accent-strong)] data-[state=active]:border-[var(--wb-border)] transition-colors"
+          >
+            Modulus
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 

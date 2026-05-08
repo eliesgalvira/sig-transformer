@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 interface InfoCardProps {
   href: string;
@@ -17,7 +17,9 @@ export function InfoCard({ href, title, body }: InfoCardProps) {
       >
         <h2 className="m-0 font-mono text-sm font-bold tracking-widest uppercase wb-accent transition-colors duration-300 group-hover:text-[var(--wb-accent-strong)]">
           [{title}]
-          <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-2 wb-text-soft group-hover:text-[var(--wb-accent)]">&gt;&gt;</span>
+          <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-2 wb-text-soft group-hover:text-[var(--wb-accent)]">
+            &gt;&gt;
+          </span>
         </h2>
         <p className="mt-3 mb-0 border-l-2 border-[var(--wb-border)] pl-3 font-mono text-xs leading-relaxed wb-text-muted transition-colors group-hover:border-[var(--wb-accent)]">
           {body}
