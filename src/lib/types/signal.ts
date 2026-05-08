@@ -1,4 +1,11 @@
-export type WaveformShape = 'square' | 'triangle' | 'sinc' | 'cos' | 'sin' | 'exp' | 'sign';
+export type WaveformShape =
+  | "square"
+  | "triangle"
+  | "sinc"
+  | "cos"
+  | "sin"
+  | "exp"
+  | "sign";
 
 export interface SignalParams {
   a: number;
@@ -24,11 +31,11 @@ export interface SignalParamsRaw {
 
 export interface FFTDataRow {
   Freq: number;
-  're(FFT)': number;
-  'im(FFT)': number;
-  'abs(FFT)': number;
+  "re(FFT)": number;
+  "im(FFT)": number;
+  "abs(FFT)": number;
   input: number;
-  're(signal)': number;
+  "re(signal)": number;
 }
 
 export interface ChartDataPoint {
@@ -36,7 +43,7 @@ export interface ChartDataPoint {
   value: number;
 }
 
-export type OutputType = 'modulus' | 'real' | 'imaginary';
+export type OutputType = "modulus" | "real" | "imaginary";
 
 export interface SignalData {
   inputSignal: ChartDataPoint[];
@@ -47,11 +54,10 @@ export interface SignalData {
 export const DEFAULT_PARAMS: SignalParams = {
   a: -20,
   b: 20,
-  signalShape: 'sinc',
+  signalShape: "sinc",
   amplitude: 1,
   frequency: 1,
   phase: 0,
   interval: 0.01,
   freqrange: 4,
 };
-

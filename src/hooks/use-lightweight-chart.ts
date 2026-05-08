@@ -1,8 +1,27 @@
-'use client';
+"use client";
 
-import { useRef, useEffect, useCallback, type RefObject, type MutableRefObject } from 'react';
-import { createChart, type IChartApi, type ISeriesApi, type SeriesType, AreaSeries, type AreaSeriesOptions, type DeepPartial, type ChartOptions, type LineData, type Time } from 'lightweight-charts';
-import type { ChartDataPoint } from '@/lib/types/signal';
+import {
+  useRef,
+  useEffect,
+  useCallback,
+  type RefObject,
+  type MutableRefObject,
+} from "react";
+import * as Effect from "effect/Effect";
+import {
+  createChart,
+  type IChartApi,
+  type ISeriesApi,
+  type SeriesType,
+  AreaSeries,
+  type AreaSeriesOptions,
+  type DeepPartial,
+  type ChartOptions,
+  type LineData,
+  type MouseEventParams,
+  type Time,
+} from "lightweight-charts";
+import type { ChartDataPoint } from "@/lib/types/signal";
 
 declare global {
   interface Window {
@@ -16,56 +35,67 @@ declare global {
 }
 
 const renderMathJax = (element: HTMLElement, callback?: () => void): void => {
-  if (window.MathJax && element) {
+  if (window.MathJax !== undefined) {
     try {
-      if (window.MathJax.typesetPromise) {
+      if (window.MathJax.typesetPromise !== undefined) {
         window.MathJax.typesetPromise([element])
           .then(() => {
-            if (callback) callback();
+            if (callback !== undefined) callback();
           })
           .catch((error: Error) => {
-            console.error('MathJax typesetPromise error:', error);
+            Effect.runFork(
+              Effect.logError("MathJax typesetPromise error:", error),
+            );
           });
-      } else if (window.MathJax.Hub?.Queue) {
+      } else if (window.MathJax.Hub?.Queue !== undefined) {
         window.MathJax.Hub.Queue(
-          ['Typeset', window.MathJax.Hub, element],
-          [() => { if (callback) callback(); }]
+          ["Typeset", window.MathJax.Hub, element],
+          [
+            () => {
+              if (callback !== undefined) callback();
+            },
+          ],
         );
       } else {
-        console.warn('MathJax typeset method not found');
+        Effect.runFork(Effect.logWarning("MathJax typeset method not found"));
       }
     } catch (error) {
-      console.error('Error triggering MathJax:', error);
+      Effect.runFork(Effect.logError("Error triggering MathJax:", error));
     }
   }
 };
 
-const setTooltipHtml = (legend: HTMLElement, name: string, time: string, value: string): void => {
-  let formulaDiv = legend.querySelector<HTMLElement>('.mathjax-formula');
-  let valueDiv = legend.querySelector<HTMLElement>('.value-display');
-  let timeDiv = legend.querySelector<HTMLElement>('.time-display');
+const setTooltipHtml = (
+  legend: HTMLElement,
+  name: string,
+  time: string,
+  value: string,
+): void => {
+  let formulaDiv = legend.querySelector<HTMLElement>(".mathjax-formula");
+  let valueDiv = legend.querySelector<HTMLElement>(".value-display");
+  let timeDiv = legend.querySelector<HTMLElement>(".time-display");
 
-  if (!formulaDiv) {
+  if (formulaDiv === null) {
     legend.innerHTML = `
       <div class="mathjax-formula text-base md:text-lg my-0">${name}</div>
       <div class="value-display text-sm md:text-base my-0">${value}</div>
       <div class="time-display text-xs md:text-sm my-0">${time}</div>
     `;
 
-    formulaDiv = legend.querySelector<HTMLElement>('.mathjax-formula');
-    valueDiv = legend.querySelector<HTMLElement>('.value-display');
-    timeDiv = legend.querySelector<HTMLElement>('.time-display');
+    formulaDiv = legend.querySelector<HTMLElement>(".mathjax-formula");
+    valueDiv = legend.querySelector<HTMLElement>(".value-display");
+    timeDiv = legend.querySelector<HTMLElement>(".time-display");
   }
 
-  if (valueDiv) valueDiv.innerHTML = value;
-  if (timeDiv) timeDiv.innerHTML = time;
+  if (valueDiv !== null) valueDiv.innerHTML = value;
+  if (timeDiv !== null) timeDiv.innerHTML = time;
 
-  if (formulaDiv) {
-    formulaDiv.style.visibility = 'hidden';
+  if (formulaDiv !== null) {
+    formulaDiv.style.visibility = "hidden";
     formulaDiv.innerHTML = name;
 
     renderMathJax(formulaDiv, () => {
-      if (formulaDiv) formulaDiv.style.visibility = 'visible';
+      if (formulaDiv !== null) formulaDiv.style.visibility = "visible";
     });
   }
 };
@@ -73,23 +103,22 @@ const setTooltipHtml = (legend: HTMLElement, name: string, time: string, value: 
 const formatPrice = (price: number): string => price.toFixed(3);
 
 const formatTime = (t: number | string): string => {
-  const n = typeof t === 'number' ? t : parseFloat(t);
+  const n = typeof t === "number" ? t : parseFloat(t);
   if (!Number.isFinite(n)) return String(t);
   return (Math.round(n * 100) / 100).toFixed(2);
 };
 
 const getLastBar = (series: ISeriesApi<SeriesType>): LineData<Time> | null => {
-  if (!series) return null;
   const data = series.data() as LineData<Time>[];
   return data.length > 0 ? data[data.length - 1] : null;
 };
 
 export interface ChartHookOptions {
-  layout?: DeepPartial<ChartOptions['layout']>;
-  crosshair?: DeepPartial<ChartOptions['crosshair']>;
-  grid?: DeepPartial<ChartOptions['grid']>;
-  timeScale?: DeepPartial<ChartOptions['timeScale']>;
-  rightPriceScale?: DeepPartial<ChartOptions['rightPriceScale']>;
+  layout?: DeepPartial<ChartOptions["layout"]>;
+  crosshair?: DeepPartial<ChartOptions["crosshair"]>;
+  grid?: DeepPartial<ChartOptions["grid"]>;
+  timeScale?: DeepPartial<ChartOptions["timeScale"]>;
+  rightPriceScale?: DeepPartial<ChartOptions["rightPriceScale"]>;
   handleScroll?: boolean;
   handleScale?: boolean;
 }
@@ -108,48 +137,62 @@ export function useLightweightChart(
   legendRef: RefObject<HTMLDivElement | null>,
   symbolNameRef: MutableRefObject<string>,
   chartOptions: DeepPartial<ChartOptions>,
-  seriesOptions: DeepPartial<AreaSeriesOptions>
+  seriesOptions: DeepPartial<AreaSeriesOptions>,
 ) {
   const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
 
   const updateLegend = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (param?: any) => {
-      if (!seriesRef.current || !legendRef.current || !symbolNameRef.current) return;
+    (param?: MouseEventParams<Time>) => {
+      if (
+        seriesRef.current === null ||
+        legendRef.current === null ||
+        symbolNameRef.current === ""
+      ) {
+        return;
+      }
 
       const validCrosshairPoint = !(
         param === undefined ||
         param.time === undefined ||
-        (param.point && (param.point.x < 0 || param.point.y < 0))
+        (param.point !== undefined && (param.point.x < 0 || param.point.y < 0))
       );
 
       let bar: LineData<Time> | null = null;
-      if (validCrosshairPoint && param) {
-        if (param.seriesData && param.seriesData.has(seriesRef.current)) {
+      if (validCrosshairPoint && param !== undefined) {
+        if (param.seriesData.has(seriesRef.current)) {
           bar = param.seriesData.get(seriesRef.current) as LineData<Time>;
         } else {
-          console.warn('Could not get series data from crosshair event. Falling back to last bar.');
+          Effect.runFork(
+            Effect.logWarning(
+              "Could not get series data from crosshair event. Falling back to last bar.",
+            ),
+          );
           bar = getLastBar(seriesRef.current as ISeriesApi<SeriesType>);
         }
       } else {
         bar = getLastBar(seriesRef.current as ISeriesApi<SeriesType>);
       }
 
-      if (!bar) return;
+      if (bar === null) return;
 
-      const time = bar.time ?? 'N/A';
+      const time = bar.time ?? "N/A";
       const price = bar.value ?? 0;
       const formattedPrice = formatPrice(price);
       const symbolName = symbolNameRef.current;
 
-      setTooltipHtml(legendRef.current, symbolName, formatTime(time as number), formattedPrice);
+      setTooltipHtml(
+        legendRef.current,
+        symbolName,
+        formatTime(time as number),
+        formattedPrice,
+      );
     },
-    [legendRef, symbolNameRef]
+    [legendRef, symbolNameRef],
   );
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (containerRef.current === null) return;
 
     const chart = createChart(containerRef.current, chartOptions);
     const series = chart.addSeries(AreaSeries, seriesOptions);
@@ -168,20 +211,22 @@ export function useLightweightChart(
     };
   }, [containerRef, chartOptions, seriesOptions, updateLegend]);
 
-  const setData = useCallback((data: ChartDataPoint[]) => {
-    if (seriesRef.current && chartRef.current) {
-      seriesRef.current.setData(data as LineData<Time>[]);
-      chartRef.current.timeScale().fitContent();
-      requestAnimationFrame(() => updateLegend(undefined));
-    }
-  }, [updateLegend]);
+  const setData = useCallback(
+    (data: ChartDataPoint[]) => {
+      if (seriesRef.current !== null && chartRef.current !== null) {
+        seriesRef.current.setData(data as LineData<Time>[]);
+        chartRef.current.timeScale().fitContent();
+        requestAnimationFrame(() => updateLegend(undefined));
+      }
+    },
+    [updateLegend],
+  );
 
   const fitContent = useCallback(() => {
-    if (chartRef.current) {
+    if (chartRef.current !== null) {
       chartRef.current.timeScale().fitContent();
     }
   }, []);
 
   return { setData, fitContent, updateLegend };
 }
-
