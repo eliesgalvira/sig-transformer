@@ -9,6 +9,11 @@ overrides:
   flatted@<3.4.0: 3.4.2
   minimatch@<3.1.5: 3.1.5
 
+patchedDependencies:
+  pragma-dsp@0.1.0-alpha.2:
+    hash: c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4
+    path: patches/pragma-dsp@0.1.0-alpha.2.patch
+
 importers:
 
   .:
@@ -54,7 +59,7 @@ importers:
         version: 16.2.0(@babel/core@7.29.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       pragma-dsp:
         specifier: 0.1.0-alpha.2
-        version: 0.1.0-alpha.2(effect@4.0.0-beta.48)
+        version: 0.1.0-alpha.2(patch_hash=c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4)(effect@4.0.0-beta.48)
       radix-ui:
         specifier: 1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -6315,7 +6320,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  pragma-dsp@0.1.0-alpha.2(effect@4.0.0-beta.48):
+  pragma-dsp@0.1.0-alpha.2(patch_hash=c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4)(effect@4.0.0-beta.48):
     optionalDependencies:
       effect: 4.0.0-beta.48
 

@@ -1,0 +1,97 @@
+diff --git a/package.json b/package.json
+index ae80cf64cf662f0e8157289d08db9ec1c8527f43..a44cc9ad886a19d35a888d00e763ce0949487fb1 100644
+--- a/package.json
++++ b/package.json
+@@ -39,82 +39,52 @@
+   "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+-      "import": {
+-        "development": "./src/index.ts",
+-        "default": "./dist/index.mjs"
+-      },
++      "import": "./dist/index.mjs",
+       "require": "./dist/index.cjs"
+     },
+     "./xform": {
+       "types": "./dist/xform/index.d.ts",
+-      "import": {
+-        "development": "./src/xform/index.ts",
+-        "default": "./dist/xform/index.mjs"
+-      },
++      "import": "./dist/xform/index.mjs",
+       "require": "./dist/xform/index.cjs"
+     },
+     "./xform/fourier": {
+       "types": "./dist/xform/fourier.d.ts",
+-      "import": {
+-        "development": "./src/xform/fourier.ts",
+-        "default": "./dist/xform/fourier.mjs"
+-      },
++      "import": "./dist/xform/fourier.mjs",
+       "require": "./dist/xform/fourier.cjs"
+     },
+     "./xform/stft": {
+       "types": "./dist/xform/stft.d.ts",
+-      "import": {
+-        "development": "./src/xform/stft.ts",
+-        "default": "./dist/xform/stft.mjs"
+-      },
++      "import": "./dist/xform/stft.mjs",
+       "require": "./dist/xform/stft.cjs"
+     },
+     "./core": {
+       "types": "./dist/core/index.d.ts",
+-      "import": {
+-        "development": "./src/core/index.ts",
+-        "default": "./dist/core/index.mjs"
+-      },
++      "import": "./dist/core/index.mjs",
+       "require": "./dist/core/index.cjs"
+     },
+     "./effect": {
+       "types": "./dist/effect/index.d.ts",
+-      "import": {
+-        "development": "./src/effect/index.ts",
+-        "default": "./dist/effect/index.mjs"
+-      },
++      "import": "./dist/effect/index.mjs",
+       "require": "./dist/effect/index.cjs"
+     },
+     "./math/complex": {
+       "types": "./dist/math/index.d.ts",
+-      "import": {
+-        "development": "./src/math/index.ts",
+-        "default": "./dist/math/index.mjs"
+-      },
++      "import": "./dist/math/index.mjs",
+       "require": "./dist/math/index.cjs"
+     },
+     "./fluent": {
+       "types": "./dist/fluent/index.d.ts",
+-      "import": {
+-        "development": "./src/fluent/index.ts",
+-        "default": "./dist/fluent/index.mjs"
+-      },
++      "import": "./dist/fluent/index.mjs",
+       "require": "./dist/fluent/index.cjs"
+     },
+     "./analysis": {
+       "types": "./dist/analysis/index.d.ts",
+-      "import": {
+-        "development": "./src/analysis/index.ts",
+-        "default": "./dist/analysis/index.mjs"
+-      },
++      "import": "./dist/analysis/index.mjs",
+       "require": "./dist/analysis/index.cjs"
+     },
+     "./xform/fourier-fluent": {
+       "types": "./dist/xform/fourier-fluent.d.ts",
+-      "import": {
+-        "development": "./src/xform/fourier-fluent.ts",
+-        "default": "./dist/xform/fourier-fluent.mjs"
+-      },
++      "import": "./dist/xform/fourier-fluent.mjs",
+       "require": "./dist/xform/fourier-fluent.cjs"
+     }
+   },
