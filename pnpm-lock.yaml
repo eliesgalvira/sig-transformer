@@ -9,11 +9,6 @@ overrides:
   flatted@<3.4.0: 3.4.2
   minimatch@<3.1.5: 3.1.5
 
-patchedDependencies:
-  pragma-dsp@0.1.0-alpha.2:
-    hash: c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4
-    path: patches/pragma-dsp@0.1.0-alpha.2.patch
-
 importers:
 
   .:
@@ -46,8 +41,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1
       effect:
-        specifier: 4.0.0-beta.48
-        version: 4.0.0-beta.48
+        specifier: 4.0.0-beta.64
+        version: 4.0.0-beta.64
       lightweight-charts:
         specifier: ^5.0.9
         version: 5.0.9
@@ -58,8 +53,8 @@ importers:
         specifier: 16.2.0
         version: 16.2.0(@babel/core@7.29.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       pragma-dsp:
-        specifier: 0.1.0-alpha.2
-        version: 0.1.0-alpha.2(patch_hash=c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4)(effect@4.0.0-beta.48)
+        specifier: 0.1.0-alpha.3
+        version: 0.1.0-alpha.3(effect@4.0.0-beta.64)
       radix-ui:
         specifier: 1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -77,8 +72,8 @@ importers:
         specifier: 0.85.1
         version: 0.85.1
       '@effect/vitest':
-        specifier: 4.0.0-beta.48
-        version: 4.0.0-beta.48(effect@4.0.0-beta.48)(vitest@4.0.18(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.3))
+        specifier: 4.0.0-beta.64
+        version: 4.0.0-beta.64(effect@4.0.0-beta.64)(vitest@4.0.18(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.3))
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
@@ -187,10 +182,10 @@ packages:
     resolution: {integrity: sha512-EXnJjIy6zQ3nUO/MZ+ynWUb8B895KZPotd1++oTs9JjDkplwM7cb6zo8Zq2zU6piwq+KflO7amXbEfj1UMpHkw==}
     hasBin: true
 
-  '@effect/vitest@4.0.0-beta.48':
-    resolution: {integrity: sha512-ONG24EIfUXTrJzIDJctIr6y6JOeml97eoZ53WRUNdwp/tHIAU+U3ME5uUdmtLBKSFeyivYjXGPvEP2DW8f/bCQ==}
+  '@effect/vitest@4.0.0-beta.64':
+    resolution: {integrity: sha512-BI+ju06iC6adB6evHSIz/HTppp9r8Kg1aaoOR6XVUgquLA9h3DJKmR7NWZLh8EXl5fIBI7VXDGpqJVr7MWBUug==}
     peerDependencies:
-      effect: ^4.0.0-beta.48
+      effect: ^4.0.0-beta.64
       vitest: ^3.0.0 || ^4.0.0
 
   '@emnapi/core@1.9.0':
@@ -2161,8 +2156,8 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
-  effect@4.0.0-beta.48:
-    resolution: {integrity: sha512-MMAM/ZabuNdNmgXiin+BAanQXK7qM8mlt7nfXDoJ/Gn9V8i89JlCq+2N0AiWmqFLXjGLA0u3FjiOjSOYQk5uMw==}
+  effect@4.0.0-beta.64:
+    resolution: {integrity: sha512-xI332I9guVLsqvLg7aO62IuWq9LiCMs+u5dhr4JDyND2ndYXAk5eaR8KMqtYLoJg1Ie28VQToYPM+xBLEBU3pQ==}
 
   electron-to-chromium@1.5.321:
     resolution: {integrity: sha512-L2C7Q279W2D/J4PLZLk7sebOILDSWos7bMsMNN06rK482umHUrh/3lM8G7IlHFOYip2oAg5nha1rCMxr/rs6ZQ==}
@@ -2972,11 +2967,11 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  pragma-dsp@0.1.0-alpha.2:
-    resolution: {integrity: sha512-Xc1mEc9bo/+Epm8gNmUjfdaou4MoKoA1wJpQ3WNijXRJywtm5SQUKxuluY6KDp/1RNicRvjaHRbC2lDlWG6sMA==}
+  pragma-dsp@0.1.0-alpha.3:
+    resolution: {integrity: sha512-fw8rh4/bC44ApDiTD//S38MpTlRjByv+ku49Iq0rN3mkMNqOYrUqJtM46ol/OySISFxyp/DdnhRxnvNHKqPfog==}
     engines: {node: '>=18'}
     peerDependencies:
-      effect: ^4.0.0-beta.48
+      effect: ^4.0.0-beta.64
     peerDependenciesMeta:
       effect:
         optional: true
@@ -3585,9 +3580,9 @@ snapshots:
 
   '@effect/language-service@0.85.1': {}
 
-  '@effect/vitest@4.0.0-beta.48(effect@4.0.0-beta.48)(vitest@4.0.18(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.3))':
+  '@effect/vitest@4.0.0-beta.64(effect@4.0.0-beta.64)(vitest@4.0.18(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.3))':
     dependencies:
-      effect: 4.0.0-beta.48
+      effect: 4.0.0-beta.64
       vitest: 4.0.18(@types/node@20.19.25)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.3)
 
   '@emnapi/core@1.9.0':
@@ -5350,7 +5345,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  effect@4.0.0-beta.48:
+  effect@4.0.0-beta.64:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.6.0
@@ -6320,9 +6315,9 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  pragma-dsp@0.1.0-alpha.2(patch_hash=c5c5979a1a925e770276d873d389965e38e3d757c1877f21505d65124ab684a4)(effect@4.0.0-beta.48):
+  pragma-dsp@0.1.0-alpha.3(effect@4.0.0-beta.64):
     optionalDependencies:
-      effect: 4.0.0-beta.48
+      effect: 4.0.0-beta.64
 
   prelude-ls@1.2.1: {}
 
