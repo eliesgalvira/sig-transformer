@@ -36,9 +36,9 @@ export function rowsToSignalData(
       });
     }
 
-    if (Number.isFinite(row.Freq) && Number.isFinite(row[outputColumn])) {
+    if (Number.isFinite(row.frequency) && Number.isFinite(row[outputColumn])) {
       outputSignal.push({
-        time: row.Freq,
+        time: row.frequency,
         value: row[outputColumn],
       });
     }

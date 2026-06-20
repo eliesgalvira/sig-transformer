@@ -254,6 +254,7 @@ function createReferenceRows(params: SignalParams): FFTDataRow[] {
     const inputValue = k < totalSamples ? signalValues[k]! : Number.NaN;
 
     rows.push({
+      frequency,
       Freq: roundLikeApp(frequency, 2),
       "re(FFT)": roundLikeApp(reScaled, 5),
       "im(FFT)": roundLikeApp(imScaled, 5),
@@ -271,7 +272,8 @@ function createReferenceRows(params: SignalParams): FFTDataRow[] {
 }
 
 function expectRowEqual(actual: FFTDataRow, expected: FFTDataRow): void {
-  const entries: ReadonlyArray<keyof FFTDataRow> = [
+  const entries: ReadonlyArray<Exclude<keyof FFTDataRow, "id">> = [
+    "frequency",
     "Freq",
     "re(FFT)",
     "im(FFT)",
@@ -360,4 +362,25 @@ describe("computeFFT", () => {
         }),
     );
   }
+
+  it.effect("keeps raw frequencies unique for the largest allowed interval", () =>
+    Effect.gen(function* () {
+      const rows = yield* computeFFTEffect({
+        a: -50,
+        b: 50,
+        signalShape: "sinc",
+        amplitude: 1,
+        frequency: 1,
+        phase: 0,
+        interval: 0.01,
+        freqrange: 4,
+      });
+
+      expect(rows).toHaveLength(16_384);
+      expect(new Set(rows.map((row) => row.frequency)).size).toBe(rows.length);
+      expect(new Set(rows.map((row) => row.Freq)).size).toBeLessThan(
+        rows.length,
+      );
+    }),
+  );
 });

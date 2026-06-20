@@ -27,6 +27,9 @@ declare global {
   interface Window {
     MathJax?: {
       typesetPromise?: (elements?: HTMLElement[]) => Promise<void>;
+      startup?: {
+        promise?: Promise<void>;
+      };
       Hub?: {
         Queue: (...args: unknown[]) => void;
       };
@@ -35,35 +38,53 @@ declare global {
 }
 
 const renderMathJax = (element: HTMLElement, callback?: () => void): void => {
-  if (window.MathJax !== undefined) {
-    try {
-      if (window.MathJax.typesetPromise !== undefined) {
-        window.MathJax.typesetPromise([element])
-          .then(() => {
-            if (callback !== undefined) callback();
-          })
-          .catch((error: Error) => {
-            Effect.runFork(
-              Effect.logError("MathJax typesetPromise error:", error),
-            );
-          });
-      } else if (window.MathJax.Hub?.Queue !== undefined) {
-        window.MathJax.Hub.Queue(
-          ["Typeset", window.MathJax.Hub, element],
-          [
-            () => {
-              if (callback !== undefined) callback();
-            },
-          ],
-        );
-      } else {
-        Effect.runFork(Effect.logWarning("MathJax typeset method not found"));
-      }
-    } catch (error) {
-      Effect.runFork(Effect.logError("Error triggering MathJax:", error));
+  const mathJax = window.MathJax;
+
+  if (mathJax === undefined) {
+    callback?.();
+    return;
+  }
+
+  try {
+    if (mathJax.typesetPromise !== undefined) {
+      mathJax.typesetPromise([element])
+        .then(() => {
+          callback?.();
+        })
+        .catch((error: Error) => {
+          Effect.runFork(Effect.logError("MathJax typesetPromise error:", error));
+          callback?.();
+        });
+      return;
     }
+
+    if (mathJax.startup?.promise !== undefined) {
+      mathJax.startup.promise
+        .then(() => renderMathJax(element, callback))
+        .catch((error: Error) => {
+          Effect.runFork(Effect.logError("MathJax startup error:", error));
+          callback?.();
+        });
+      return;
+    }
+
+    if (mathJax.Hub?.Queue !== undefined) {
+      mathJax.Hub.Queue(["Typeset", mathJax.Hub, element], [callback ?? (() => {})]);
+      return;
+    }
+
+    callback?.();
+  } catch (error) {
+    Effect.runFork(Effect.logError("Error triggering MathJax:", error));
+    callback?.();
   }
 };
+
+function createLegendNode(className: string): HTMLDivElement {
+  const element = document.createElement("div");
+  element.className = className;
+  return element;
+}
 
 const setTooltipHtml = (
   legend: HTMLElement,
@@ -76,23 +97,23 @@ const setTooltipHtml = (
   let timeDiv = legend.querySelector<HTMLElement>(".time-display");
 
   if (formulaDiv === null) {
-    legend.innerHTML = `
-      <div class="mathjax-formula text-base md:text-lg my-0">${name}</div>
-      <div class="value-display text-sm md:text-base my-0">${value}</div>
-      <div class="time-display text-xs md:text-sm my-0">${time}</div>
-    `;
+    legend.replaceChildren(
+      createLegendNode("mathjax-formula text-base md:text-lg my-0"),
+      createLegendNode("value-display text-sm md:text-base my-0"),
+      createLegendNode("time-display text-xs md:text-sm my-0"),
+    );
 
     formulaDiv = legend.querySelector<HTMLElement>(".mathjax-formula");
     valueDiv = legend.querySelector<HTMLElement>(".value-display");
     timeDiv = legend.querySelector<HTMLElement>(".time-display");
   }
 
-  if (valueDiv !== null) valueDiv.innerHTML = value;
-  if (timeDiv !== null) timeDiv.innerHTML = time;
+  if (valueDiv !== null) valueDiv.textContent = value;
+  if (timeDiv !== null) timeDiv.textContent = time;
 
   if (formulaDiv !== null) {
     formulaDiv.style.visibility = "hidden";
-    formulaDiv.innerHTML = name;
+    formulaDiv.textContent = name;
 
     renderMathJax(formulaDiv, () => {
       if (formulaDiv !== null) formulaDiv.style.visibility = "visible";

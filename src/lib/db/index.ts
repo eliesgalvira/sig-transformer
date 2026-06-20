@@ -12,12 +12,12 @@ class SignalDatabaseOperationError extends Schema.TaggedErrorClass<SignalDatabas
 ) {}
 
 export class SignalDatabase extends Dexie {
-  signals!: Table<FFTDataRow, number>;
+  signalRows!: Table<FFTDataRow, number>;
 
   constructor() {
-    super("SignalDB");
+    super("SignalWorkbenchDB");
     this.version(1).stores({
-      signals: "Freq",
+      signalRows: "++id, frequency, Freq",
     });
   }
 }
@@ -39,18 +39,13 @@ export const createDB = (): Promise<SignalDatabase> =>
 export const loadJSONToIndexedDBEffect = (jsonData: FFTDataRow[]) =>
   Effect.gen(function* () {
     const database = getDB();
-    yield* Effect.log(
-      "Data loaded from JSON file into IndexedDB:",
-      jsonData.length,
-      "rows",
-    );
     yield* Effect.tryPromise({
-      try: () => database.signals.clear(),
+      try: () => database.signalRows.clear(),
       catch: (error) =>
         new SignalDatabaseOperationError({ operation: "clearRows", error }),
     });
     yield* Effect.tryPromise({
-      try: () => database.signals.bulkAdd(jsonData),
+      try: () => database.signalRows.bulkAdd(jsonData),
       catch: (error) =>
         new SignalDatabaseOperationError({ operation: "bulkAddRows", error }),
     });
@@ -66,7 +61,7 @@ export const loadJSONToIndexedDB = (jsonData: FFTDataRow[]): Promise<void> =>
 export const checkDBHasDataEffect = Effect.gen(function* () {
   const database = getDB();
   const count = yield* Effect.tryPromise({
-    try: () => database.signals.count(),
+    try: () => database.signalRows.count(),
     catch: (error) =>
       new SignalDatabaseOperationError({ operation: "countRows", error }),
   });
@@ -86,7 +81,7 @@ export const checkDBHasData = (): Promise<boolean> =>
 export const getAllSignalsEffect = Effect.gen(function* () {
   const database = getDB();
   return yield* Effect.tryPromise({
-    try: () => database.signals.toArray(),
+    try: () => database.signalRows.toArray(),
     catch: (error) =>
       new SignalDatabaseOperationError({ operation: "readRows", error }),
   });

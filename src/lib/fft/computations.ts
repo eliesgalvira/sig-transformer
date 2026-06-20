@@ -114,6 +114,7 @@ function processFFTOutput(
       k < sample.totalSamples ? sample.signalValues[k] : Number.NaN;
 
     rows.push({
+      frequency,
       Freq: roundTo(frequency, 2),
       "re(FFT)": roundTo(real, 5),
       "im(FFT)": roundTo(imag, 5),

@@ -30,6 +30,8 @@ export interface SignalParamsRaw {
 }
 
 export interface FFTDataRow {
+  id?: number;
+  frequency: number;
   Freq: number;
   "re(FFT)": number;
   "im(FFT)": number;

@@ -51,6 +51,16 @@ const StoredSignalDraftSchema = Schema.Struct({
   bandwidth: NumericLikeSchema,
 });
 
+const SIGNAL_PARAM_LIMITS = {
+  start: { min: -50, max: -1 },
+  end: { min: 1, max: 50 },
+  amplitude: { min: -100, max: 100 },
+  frequency: { min: 0.1, max: 50 },
+  phase: { min: -100, max: 100 },
+  interval: { min: 0.01, max: 0.1 },
+  maxPaddedFftSize: 16_384,
+} as const;
+
 export interface SignalDraft {
   start: string;
   end: string;
@@ -71,7 +81,12 @@ export interface SignalBootstrap {
 export const DEFAULT_SIGNAL_DRAFT: SignalDraft = toSignalDraft(DEFAULT_PARAMS);
 
 function parseStoredNumber(field: string, value: string | number): number {
-  const parsed = typeof value === "number" ? value : parseFloat(value);
+  const parsed =
+    typeof value === "number"
+      ? value
+      : value.trim() === ""
+        ? Number.NaN
+        : Number(value);
   if (!Number.isFinite(parsed)) {
     throw new InvalidSignalDraftError({
       field,
@@ -79,6 +94,58 @@ function parseStoredNumber(field: string, value: string | number): number {
     });
   }
   return parsed;
+}
+
+function assertBetween(
+  field: string,
+  value: number,
+  bounds: { readonly min: number; readonly max: number },
+): void {
+  if (value < bounds.min || value > bounds.max) {
+    throw new InvalidSignalDraftError({
+      field,
+      message: `${field} must be between ${bounds.min} and ${bounds.max}.`,
+    });
+  }
+}
+
+function assertSignalParamsWithinDomain(params: SignalParams): void {
+  assertBetween("start", params.a, SIGNAL_PARAM_LIMITS.start);
+  assertBetween("end", params.b, SIGNAL_PARAM_LIMITS.end);
+  assertBetween("amplitude", params.amplitude, SIGNAL_PARAM_LIMITS.amplitude);
+  assertBetween("frequency", params.frequency, SIGNAL_PARAM_LIMITS.frequency);
+  assertBetween("phase", params.phase, SIGNAL_PARAM_LIMITS.phase);
+  assertBetween("interval", params.interval, SIGNAL_PARAM_LIMITS.interval);
+
+  if (params.b - params.a <= 0) {
+    throw new InvalidSignalDraftError({
+      field: "interval-range",
+      message: "End must be greater than Start.",
+    });
+  }
+
+  const maxBandwidth = getMaxBandwidth(
+    String(params.a),
+    String(params.b),
+    String(params.interval),
+  );
+
+  if (params.freqrange < 0.1 || params.freqrange > maxBandwidth) {
+    throw new InvalidSignalDraftError({
+      field: "bandwidth",
+      message: `bandwidth must be between 0.1 and ${maxBandwidth}.`,
+    });
+  }
+
+  const totalSamples = Math.ceil((params.b - params.a) / params.interval) + 1;
+  const paddedSize = 2 ** Math.ceil(Math.log2(Math.max(totalSamples, 1)));
+
+  if (paddedSize > SIGNAL_PARAM_LIMITS.maxPaddedFftSize) {
+    throw new InvalidSignalDraftError({
+      field: "interval",
+      message: "The selected range and interval generate too many samples.",
+    });
+  }
 }
 
 export function toSignalDraft(params: SignalParams): SignalDraft {
@@ -215,6 +282,8 @@ export function decodeDraftToSignalParams(draft: SignalDraft): SignalParams {
       message: "Interval must be greater than 0.",
     });
   }
+
+  assertSignalParamsWithinDomain(params);
 
   return params;
 }
