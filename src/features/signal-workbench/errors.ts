@@ -55,6 +55,19 @@ export type WorkbenchError =
   | SignalGenerationError
   | SignalDatabaseError;
 
+const WorkbenchErrorSchema = Schema.Union([
+  LocalStorageReadError,
+  LocalStorageWriteError,
+  InvalidStoredSignalParamsError,
+  InvalidSignalDraftError,
+  SignalGenerationError,
+  SignalDatabaseError,
+]);
+
+export function isWorkbenchError(error: unknown): error is WorkbenchError {
+  return Schema.is(WorkbenchErrorSchema)(error);
+}
+
 export function describeWorkbenchError(error: WorkbenchError): string {
   switch (error._tag) {
     case "InvalidSignalDraftError":

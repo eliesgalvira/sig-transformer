@@ -6,39 +6,34 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import * as Effect from "effect/Effect";
 import type { OutputType, SignalData, SignalParams } from "@/lib/types/signal";
-import { DEFAULT_PARAMS } from "@/lib/types/signal";
 import {
-  DEFAULT_SIGNAL_DRAFT,
-  bootstrapSignalWorkbench,
   describeWorkbenchError,
-  loadSignalChartData,
-  mergeSignalDraft,
-  persistSignalDraft,
+  isWorkbenchError,
   runSignalWorkbench,
-  submitSignalDraft,
-  toSignalDraft,
+  signalWorkbench,
   type SignalDraft,
+  type SignalWorkbenchState,
 } from "@/features/signal-workbench";
-
-type SignalWorkbenchStatus = "booting" | "ready" | "generating" | "error";
 
 interface SignalContextValue {
   draft: SignalDraft;
   signalParams: SignalParams;
+  signalData: SignalData;
+  hasCommittedSignal: boolean;
   isLoading: boolean;
-  status: SignalWorkbenchStatus;
+  status: SignalWorkbenchState["status"];
   outputType: OutputType;
   updateVersion: number;
   errorMessage: string | null;
   updateDraft: (updates: Partial<SignalDraft>) => void;
   submitDraft: () => Promise<void>;
   setOutputType: (type: OutputType) => void;
-  loadSignalData: (type?: OutputType) => Promise<SignalData>;
 }
 
 const SignalContext = createContext<SignalContextValue | null>(null);
@@ -48,36 +43,30 @@ interface SignalProviderProps {
 }
 
 function getWorkbenchMessage(error: unknown): string {
-  if (error !== null && typeof error === "object" && "_tag" in error) {
-    return describeWorkbenchError(error as never);
+  if (isWorkbenchError(error)) {
+    return describeWorkbenchError(error);
   }
   return "An unexpected signal workbench error occurred.";
 }
 
 export function SignalProvider({ children }: SignalProviderProps) {
-  const [draft, setDraft] = useState<SignalDraft>(DEFAULT_SIGNAL_DRAFT);
-  const [signalParams, setSignalParams] =
-    useState<SignalParams>(DEFAULT_PARAMS);
-  const [status, setStatus] = useState<SignalWorkbenchStatus>("booting");
-  const [outputType, setOutputType] = useState<OutputType>("modulus");
-  const [updateVersion, setUpdateVersion] = useState(0);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [workbenchState, setWorkbenchState] = useState<SignalWorkbenchState>(
+    signalWorkbench.initialState,
+  );
+  const stateRef = useRef(workbenchState);
+
+  const commitState = useCallback((nextState: SignalWorkbenchState) => {
+    stateRef.current = nextState;
+    setWorkbenchState(nextState);
+  }, []);
 
   useEffect(() => {
     let isActive = true;
 
-    void runSignalWorkbench(bootstrapSignalWorkbench()).then(
-      (bootstrap) => {
-        if (!isActive) {
-          return;
-        }
-
-        setDraft(bootstrap.draft);
-        setSignalParams(bootstrap.signalParams);
-        setStatus("ready");
-        setErrorMessage(null);
-        if (bootstrap.generatedOnBoot) {
-          setUpdateVersion(1);
+    void runSignalWorkbench(signalWorkbench.bootstrap()).then(
+      (readyState) => {
+        if (isActive) {
+          commitState(readyState);
         }
       },
       (error: unknown) => {
@@ -88,21 +77,29 @@ export function SignalProvider({ children }: SignalProviderProps) {
         Effect.runFork(
           Effect.logError("[signal-workbench] bootstrap failed", error),
         );
-        setStatus("error");
-        setErrorMessage(getWorkbenchMessage(error));
+        commitState(
+          signalWorkbench.transition(stateRef.current, {
+            type: "failed",
+            message: getWorkbenchMessage(error),
+          }),
+        );
       },
     );
 
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [commitState]);
 
-  const updateDraft = useCallback((updates: Partial<SignalDraft>) => {
-    setDraft((currentDraft) => {
-      const nextDraft = mergeSignalDraft(currentDraft, updates);
+  const updateDraft = useCallback(
+    (updates: Partial<SignalDraft>) => {
+      const nextState = signalWorkbench.transition(stateRef.current, {
+        type: "draftEdited",
+        updates,
+      });
+      commitState(nextState);
 
-      void runSignalWorkbench(persistSignalDraft(nextDraft)).catch(
+      void runSignalWorkbench(signalWorkbench.persistDraft(nextState.draft)).catch(
         (error: unknown) => {
           Effect.runFork(
             Effect.logError(
@@ -112,64 +109,69 @@ export function SignalProvider({ children }: SignalProviderProps) {
           );
         },
       );
-
-      return nextDraft;
-    });
-  }, []);
+    },
+    [commitState],
+  );
 
   const submitDraft = useCallback(() => {
-    setStatus("generating");
-    setErrorMessage(null);
+    const generatingState = signalWorkbench.transition(stateRef.current, {
+      type: "generationStarted",
+    });
+    commitState(generatingState);
 
-    return runSignalWorkbench(submitSignalDraft(draft)).then(
-      (nextParams) => {
-        setDraft(toSignalDraft(nextParams));
-        setSignalParams(nextParams);
-        setOutputType("modulus");
-        setStatus("ready");
-        setUpdateVersion((version) => version + 1);
+    return runSignalWorkbench(signalWorkbench.generate(generatingState)).then(
+      (readyState) => {
+        commitState(readyState);
       },
       (error: unknown) => {
         Effect.runFork(
           Effect.logError("[signal-workbench] submit failed", error),
         );
-        setStatus("error");
-        setErrorMessage(getWorkbenchMessage(error));
+        commitState(
+          signalWorkbench.transition(stateRef.current, {
+            type: "failed",
+            message: getWorkbenchMessage(error),
+          }),
+        );
       },
     );
-  }, [draft]);
+  }, [commitState]);
 
-  const loadSignalData = useCallback(
-    (type: OutputType = outputType) =>
-      runSignalWorkbench(loadSignalChartData(signalParams, type)),
-    [outputType, signalParams],
+  const setOutputType = useCallback(
+    (outputType: OutputType) => {
+      commitState(
+        signalWorkbench.transition(stateRef.current, {
+          type: "outputSelected",
+          outputType,
+        }),
+      );
+    },
+    [commitState],
+  );
+
+  const signalData = useMemo(
+    () => signalWorkbench.chartData(workbenchState),
+    [workbenchState],
   );
 
   const value = useMemo<SignalContextValue>(
     () => ({
-      draft,
-      signalParams,
-      isLoading: status === "booting" || status === "generating",
-      status,
-      outputType,
-      updateVersion,
-      errorMessage,
+      draft: workbenchState.draft,
+      signalParams: workbenchState.committedSignal,
+      signalData,
+      hasCommittedSignal: workbenchState.rows.length > 0,
+      isLoading:
+        workbenchState.status === "booting" ||
+        workbenchState.status === "generating",
+      status: workbenchState.status,
+      outputType: workbenchState.outputType,
+      updateVersion: workbenchState.revision,
+      errorMessage: workbenchState.errorMessage,
       updateDraft,
       submitDraft,
       setOutputType,
-      loadSignalData,
     }),
-    [
-      draft,
-      signalParams,
-      status,
-      outputType,
-      updateVersion,
-      errorMessage,
-      updateDraft,
-      submitDraft,
-      loadSignalData,
-    ],
+    [workbenchState, signalData, setOutputType, submitDraft, updateDraft],
   );
 
   return (

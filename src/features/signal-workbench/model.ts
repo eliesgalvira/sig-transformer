@@ -1,6 +1,7 @@
 import * as Schema from "effect/Schema";
 import {
   DEFAULT_PARAMS,
+  type FFTDataRow,
   type OutputType,
   type SignalParams,
   type WaveformShape,
@@ -10,6 +11,7 @@ import { InvalidSignalDraftError } from "./errors";
 export const LEGACY_STORAGE_KEY = "signalParams";
 export const DRAFT_STORAGE_KEY = "signalWorkbench:draft";
 export const COMMITTED_STORAGE_KEY = "signalWorkbench:committed";
+export const ROW_CACHE_STORAGE_KEY = "signalWorkbench:row-cache";
 
 const NumericLikeSchema = Schema.Union([Schema.String, Schema.Number]);
 
@@ -61,6 +63,19 @@ const SIGNAL_PARAM_LIMITS = {
   maxPaddedFftSize: 16_384,
 } as const;
 
+export const WAVEFORM_OPTIONS = [
+  { value: "square", label: "Square" },
+  { value: "triangle", label: "Triangle" },
+  { value: "sinc", label: "Sinc" },
+  { value: "cos", label: "Cosine" },
+  { value: "sin", label: "Sine" },
+  { value: "exp", label: "exp" },
+  { value: "sign", label: "sign" },
+] as const satisfies ReadonlyArray<{
+  readonly value: WaveformShape;
+  readonly label: string;
+}>;
+
 export interface SignalDraft {
   start: string;
   end: string;
@@ -72,13 +87,55 @@ export interface SignalDraft {
   bandwidth: string;
 }
 
-export interface SignalBootstrap {
-  draft: SignalDraft;
-  signalParams: SignalParams;
-  generatedOnBoot: boolean;
+export type NumericSignalDraftField = Exclude<keyof SignalDraft, "waveform">;
+
+export interface NumericSignalDraftFieldPolicy {
+  readonly label: string;
+  readonly tooltip: string;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
 }
 
+export interface SignalDraftPolicy {
+  readonly fields: Record<
+    NumericSignalDraftField,
+    NumericSignalDraftFieldPolicy
+  >;
+  readonly waveform: {
+    readonly label: string;
+    readonly tooltip: string;
+    readonly options: typeof WAVEFORM_OPTIONS;
+  };
+}
+
+interface SignalWorkbenchSnapshot {
+  draft: SignalDraft;
+  committedSignal: SignalParams;
+  rows: readonly FFTDataRow[];
+  outputType: OutputType;
+  revision: number;
+}
+
+export type SignalWorkbenchState = SignalWorkbenchSnapshot &
+  (
+    | { readonly status: "booting"; readonly errorMessage: null }
+    | { readonly status: "ready"; readonly errorMessage: null }
+    | { readonly status: "generating"; readonly errorMessage: null }
+    | { readonly status: "error"; readonly errorMessage: string }
+  );
+
 export const DEFAULT_SIGNAL_DRAFT: SignalDraft = toSignalDraft(DEFAULT_PARAMS);
+
+export const INITIAL_SIGNAL_WORKBENCH_STATE: SignalWorkbenchState = {
+  status: "booting",
+  errorMessage: null,
+  draft: DEFAULT_SIGNAL_DRAFT,
+  committedSignal: DEFAULT_PARAMS,
+  rows: [],
+  outputType: "modulus",
+  revision: 0,
+};
 
 function parseStoredNumber(field: string, value: string | number): number {
   const parsed =
@@ -334,6 +391,67 @@ export function getPhaseTooltip(shape: WaveformShape): string {
     default:
       return "Offsets the waveform horizontally within each cycle.";
   }
+}
+
+export function getSignalDraftPolicy(draft: SignalDraft): SignalDraftPolicy {
+  const maxBandwidth = getMaxBandwidth(
+    draft.start,
+    draft.end,
+    draft.interval,
+  );
+
+  return {
+    fields: {
+      start: {
+        label: "Start:",
+        tooltip: "Sets where the sampled interval begins.",
+        ...SIGNAL_PARAM_LIMITS.start,
+        step: 0.1,
+      },
+      end: {
+        label: "End:",
+        tooltip: "Sets where the sampled interval ends.",
+        ...SIGNAL_PARAM_LIMITS.end,
+        step: 0.1,
+      },
+      amplitude: {
+        label: "Amplitude (A):",
+        tooltip: "Controls the height or strength of the waveform.",
+        ...SIGNAL_PARAM_LIMITS.amplitude,
+        step: 0.1,
+      },
+      frequency: {
+        label: getFrequencyLabel(draft.waveform),
+        tooltip: getFrequencyTooltip(draft.waveform),
+        ...SIGNAL_PARAM_LIMITS.frequency,
+        step: 0.1,
+      },
+      phase: {
+        label: getPhaseLabel(draft.waveform),
+        tooltip: getPhaseTooltip(draft.waveform),
+        ...SIGNAL_PARAM_LIMITS.phase,
+        step: 0.01,
+      },
+      interval: {
+        label: "Interval (T):",
+        tooltip: "Sets the sampling step between generated points.",
+        ...SIGNAL_PARAM_LIMITS.interval,
+        step: 0.01,
+      },
+      bandwidth: {
+        label: `BW (<= ${maxBandwidth} Hz):`,
+        tooltip: "Limits how much of the frequency spectrum is displayed.",
+        min: 0.1,
+        max: maxBandwidth,
+        step: 0.1,
+      },
+    },
+    waveform: {
+      label: "Waveform:",
+      tooltip: "Chooses which function shape will be generated.",
+      options: WAVEFORM_OPTIONS,
+    },
+  };
 }
 
 export function normalizeOutputType(value: string): OutputType {

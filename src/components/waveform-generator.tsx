@@ -30,14 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  getFrequencyTooltip,
-  getFrequencyLabel,
-  getMaxBandwidth,
-  getPhaseTooltip,
-  getPhaseLabel,
+  getSignalDraftPolicy,
   type SignalDraft,
 } from "@/features/signal-workbench";
-import type { WaveformShape } from "@/lib/types/signal";
 import { cn } from "@/lib/utils";
 
 const displayTextClass =
@@ -123,15 +118,81 @@ function ParameterLabel({
   );
 }
 
+function HardwareInterfacePanel() {
+  return (
+    <div
+      className="wb-panel-strong relative mt-auto mb-auto flex items-end justify-between overflow-hidden rounded-lg border p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.14)]"
+      aria-hidden="true"
+    >
+      <div
+        className="absolute top-2 right-2 flex gap-1 z-0 opacity-20"
+        aria-hidden="true"
+      >
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            key={index}
+            className="h-6 w-1 rounded-full bg-[var(--wb-input-border)]"
+          />
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-2 z-10 w-full pl-1">
+        <div className="flex justify-between items-end w-full">
+          <div className="grid grid-cols-2 gap-2 mb-1 pointer-events-none">
+            {["Mod", "Sweep", "Burst", "Utility"].map((label) => (
+              <div
+                key={label}
+                className="flex h-5 w-12 items-center justify-center rounded-sm border border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] shadow-sm"
+              >
+                <span className="text-[8px] font-mono font-bold capitalize tracking-tighter wb-text-muted">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-5 pr-2 pointer-events-none">
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="mb-0.5 rounded-[2px] border border-[var(--wb-border)] bg-[var(--wb-accent-soft)] px-1.5 text-[8px] font-mono font-bold wb-accent">
+                CH 1
+              </div>
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-[var(--wb-accent)] bg-[var(--wb-panel-soft)] shadow-[0_0_12px_var(--wb-accent-ghost),inset_0_0_10px_rgba(0,0,0,0.2)]">
+                <div className="relative flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--wb-border-soft)] bg-[var(--wb-panel)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.16)]">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[var(--wb-accent-strong)] shadow-[0_0_3px_var(--wb-accent)]" />
+                  <div className="absolute -top-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-muted)]" />
+                  <div className="absolute -bottom-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-muted)]" />
+                </div>
+              </div>
+              <div className="mt-1 text-[7px] font-mono wb-text-soft">50Ω</div>
+            </div>
+
+            <div className="flex flex-col items-center gap-0.5 opacity-50 relative">
+              <div className="mb-0.5 rounded-[2px] border border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] px-1.5 text-[8px] font-mono font-bold wb-text-muted">
+                CH 2
+              </div>
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] shadow-[inset_0_0_10px_rgba(0,0,0,0.16)]">
+                <div className="relative flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--wb-border-soft)] bg-[var(--wb-panel)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.16)]">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[var(--wb-text-soft)]" />
+                  <div className="absolute -top-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-soft)]" />
+                  <div className="absolute -bottom-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-soft)]" />
+                </div>
+              </div>
+              <div className="mt-1 text-[7px] font-mono wb-text-soft">
+                HighZ
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function WaveformGenerator() {
   const { draft, errorMessage, isLoading, status, submitDraft, updateDraft } =
     useSignal();
   const form = draft;
-
-  // Dynamic labels based on waveform
-  const frequencyLabel = getFrequencyLabel(form.waveform);
-  const phaseLabel = getPhaseLabel(form.waveform);
-  const maxBandwidth = getMaxBandwidth(form.start, form.end, form.interval);
+  const policy = getSignalDraftPolicy(form);
 
   const updateForm = (updates: Partial<SignalDraft>) => updateDraft(updates);
 
@@ -192,38 +253,40 @@ export function WaveformGenerator() {
                 <Field>
                   <ParameterLabel
                     fieldId="start"
-                    tooltip="Sets where the sampled interval begins."
+                    tooltip={policy.fields.start.tooltip}
                   >
-                    Start:
+                    {policy.fields.start.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="start"
                     aria-labelledby="start-label"
                     value={form.start}
                     onChange={(e) => updateForm({ start: e.target.value })}
-                    step="0.1"
-                    min="-50"
-                    max="-1"
+                    step={policy.fields.start.step}
+                    min={policy.fields.start.min}
+                    max={policy.fields.start.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
                 <Field>
                   <ParameterLabel
                     fieldId="end"
-                    tooltip="Sets where the sampled interval ends."
+                    tooltip={policy.fields.end.tooltip}
                   >
-                    End:
+                    {policy.fields.end.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="end"
                     aria-labelledby="end-label"
                     value={form.end}
                     onChange={(e) => updateForm({ end: e.target.value })}
-                    step="0.1"
-                    min="1"
-                    max="50"
+                    step={policy.fields.end.step}
+                    min={policy.fields.end.min}
+                    max={policy.fields.end.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
@@ -234,15 +297,21 @@ export function WaveformGenerator() {
                 <Field>
                   <ParameterLabel
                     fieldId="waveform"
-                    tooltip="Chooses which function shape will be generated."
+                    tooltip={policy.waveform.tooltip}
                   >
-                    Waveform:
+                    {policy.waveform.label}
                   </ParameterLabel>
                   <Select
+                    disabled={isLoading}
                     value={form.waveform}
-                    onValueChange={(v) =>
-                      updateForm({ waveform: v as WaveformShape })
-                    }
+                    onValueChange={(value) => {
+                      const option = policy.waveform.options.find(
+                        (candidate) => candidate.value === value,
+                      );
+                      if (option !== undefined) {
+                        updateForm({ waveform: option.value });
+                      }
+                    }}
                   >
                     <SelectTrigger
                       id="waveform"
@@ -252,88 +321,38 @@ export function WaveformGenerator() {
                       <SelectValue placeholder="Select waveform" />
                     </SelectTrigger>
                     <SelectContent className="wb-menu-panel border">
-                      <SelectItem
-                        value="square"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        Square
-                      </SelectItem>
-                      <SelectItem
-                        value="triangle"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        Triangle
-                      </SelectItem>
-                      <SelectItem
-                        value="sinc"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        Sinc
-                      </SelectItem>
-                      <SelectItem
-                        value="cos"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        Cosine
-                      </SelectItem>
-                      <SelectItem
-                        value="sin"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        Sine
-                      </SelectItem>
-                      <SelectItem
-                        value="exp"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        exp
-                      </SelectItem>
-                      <SelectItem
-                        value="sign"
-                        className={cn(
-                          controlTextClass,
-                          "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
-                        )}
-                      >
-                        sign
-                      </SelectItem>
+                      {policy.waveform.options.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          className={cn(
+                            controlTextClass,
+                            "wb-text data-[highlighted]:bg-[var(--wb-panel-strong)] data-[highlighted]:text-[var(--wb-title)]",
+                          )}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
                 <Field>
                   <ParameterLabel
                     fieldId="amplitude"
-                    tooltip="Controls the height or strength of the waveform."
+                    tooltip={policy.fields.amplitude.tooltip}
                   >
-                    Amplitude (A):
+                    {policy.fields.amplitude.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="amplitude"
                     aria-labelledby="amplitude-label"
                     value={form.amplitude}
                     onChange={(e) => updateForm({ amplitude: e.target.value })}
-                    step="0.1"
-                    min="-100"
-                    max="100"
+                    step={policy.fields.amplitude.step}
+                    min={policy.fields.amplitude.min}
+                    max={policy.fields.amplitude.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
@@ -344,38 +363,40 @@ export function WaveformGenerator() {
                 <Field>
                   <ParameterLabel
                     fieldId="frequency"
-                    tooltip={getFrequencyTooltip(form.waveform)}
+                    tooltip={policy.fields.frequency.tooltip}
                   >
-                    {frequencyLabel}
+                    {policy.fields.frequency.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="frequency"
                     aria-labelledby="frequency-label"
                     value={form.frequency}
                     onChange={(e) => updateForm({ frequency: e.target.value })}
-                    step="0.1"
-                    min="0.1"
-                    max="50"
+                    step={policy.fields.frequency.step}
+                    min={policy.fields.frequency.min}
+                    max={policy.fields.frequency.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
                 <Field>
                   <ParameterLabel
                     fieldId="phase"
-                    tooltip={getPhaseTooltip(form.waveform)}
+                    tooltip={policy.fields.phase.tooltip}
                   >
-                    {phaseLabel}
+                    {policy.fields.phase.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="phase"
                     aria-labelledby="phase-label"
                     value={form.phase}
                     onChange={(e) => updateForm({ phase: e.target.value })}
-                    step="0.01"
-                    min="-100"
-                    max="100"
+                    step={policy.fields.phase.step}
+                    min={policy.fields.phase.min}
+                    max={policy.fields.phase.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
@@ -386,112 +407,47 @@ export function WaveformGenerator() {
                 <Field>
                   <ParameterLabel
                     fieldId="interval"
-                    tooltip="Sets the sampling step between generated points."
+                    tooltip={policy.fields.interval.tooltip}
                   >
-                    Interval (T):
+                    {policy.fields.interval.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="interval"
                     aria-labelledby="interval-label"
                     value={form.interval}
                     onChange={(e) => updateForm({ interval: e.target.value })}
-                    step="0.01"
-                    min="0.01"
-                    max="0.1"
+                    step={policy.fields.interval.step}
+                    min={policy.fields.interval.min}
+                    max={policy.fields.interval.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
                 <Field>
                   <ParameterLabel
                     fieldId="bandwidth"
-                    tooltip="Limits how much of the frequency spectrum is displayed."
+                    tooltip={policy.fields.bandwidth.tooltip}
                   >
-                    BW (&lt;= {maxBandwidth} Hz):
+                    {policy.fields.bandwidth.label}
                   </ParameterLabel>
                   <Input
+                    disabled={isLoading}
                     type="number"
                     id="bandwidth"
                     aria-labelledby="bandwidth-label"
                     value={form.bandwidth}
                     onChange={(e) => updateForm({ bandwidth: e.target.value })}
-                    step="0.1"
-                    min="0.1"
-                    max={maxBandwidth}
+                    step={policy.fields.bandwidth.step}
+                    min={policy.fields.bandwidth.min}
+                    max={policy.fields.bandwidth.max}
                     className="wb-input h-8 font-mono text-xs tracking-[0.12em] focus:border-[var(--wb-accent)] focus:ring-[color:var(--wb-accent-soft)]"
                   />
                 </Field>
               </div>
             </FieldGroup>
 
-            {/* Decorative Hardware Interface Panel */}
-            <div className="wb-panel-strong relative mt-auto mb-auto flex items-end justify-between overflow-hidden rounded-lg border p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.14)]">
-              {/* Ventilation grill pattern top right */}
-              <div className="absolute top-2 right-2 flex gap-1 z-0 opacity-20">
-                <div className="h-6 w-1 rounded-full bg-[var(--wb-input-border)]"></div>
-                <div className="h-6 w-1 rounded-full bg-[var(--wb-input-border)]"></div>
-                <div className="h-6 w-1 rounded-full bg-[var(--wb-input-border)]"></div>
-                <div className="h-6 w-1 rounded-full bg-[var(--wb-input-border)]"></div>
-              </div>
-
-              <div className="flex flex-col gap-2 z-10 w-full pl-1">
-                <div className="flex justify-between items-end w-full">
-                  {/* Left Side: Mock Hard Buttons */}
-                  <div className="grid grid-cols-2 gap-2 mb-1 pointer-events-none">
-                    {["Mod", "Sweep", "Burst", "Utility"].map((label) => (
-                      <div
-                        key={label}
-                        className="flex h-5 w-12 items-center justify-center rounded-sm border border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] shadow-sm"
-                      >
-                        <span className="text-[8px] font-mono font-bold capitalize tracking-tighter wb-text-muted">
-                          {label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Center/Right Side: Hardware Ports (BNC Connectors) */}
-                  <div className="flex gap-5 pr-2 pointer-events-none">
-                    {/* Active Channel */}
-                    <div className="flex flex-col items-center gap-0.5">
-                      <div className="mb-0.5 rounded-[2px] border border-[var(--wb-border)] bg-[var(--wb-accent-soft)] px-1.5 text-[8px] font-mono font-bold wb-accent">
-                        CH 1
-                      </div>
-                      <div className="relative flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-[var(--wb-accent)] bg-[var(--wb-panel-soft)] shadow-[0_0_12px_var(--wb-accent-ghost),inset_0_0_10px_rgba(0,0,0,0.2)]">
-                        {/* Inner BNC Ring */}
-                        <div className="relative flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--wb-border-soft)] bg-[var(--wb-panel)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.16)]">
-                          {/* Core pin */}
-                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--wb-accent-strong)] shadow-[0_0_3px_var(--wb-accent)]"></div>
-                          {/* Bayonet nubs */}
-                          <div className="absolute -top-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-muted)]"></div>
-                          <div className="absolute -bottom-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-muted)]"></div>
-                        </div>
-                      </div>
-                      <div className="mt-1 text-[7px] font-mono wb-text-soft">
-                        50Ω
-                      </div>
-                    </div>
-
-                    {/* Inactive Channel */}
-                    <div className="flex flex-col items-center gap-0.5 opacity-50 relative">
-                      <div className="mb-0.5 rounded-[2px] border border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] px-1.5 text-[8px] font-mono font-bold wb-text-muted">
-                        CH 2
-                      </div>
-                      <div className="relative flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-[var(--wb-border-soft)] bg-[var(--wb-panel-soft)] shadow-[inset_0_0_10px_rgba(0,0,0,0.16)]">
-                        <div className="relative flex h-[22px] w-[22px] items-center justify-center rounded-full border border-[var(--wb-border-soft)] bg-[var(--wb-panel)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.16)]">
-                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--wb-text-soft)]"></div>
-                          <div className="absolute -top-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-soft)]"></div>
-                          <div className="absolute -bottom-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-[1px] bg-[var(--wb-text-soft)]"></div>
-                        </div>
-                      </div>
-                      <div className="mt-1 text-[7px] font-mono wb-text-soft">
-                        HighZ
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HardwareInterfacePanel />
           </CardContent>
           <CardFooter className="flex justify-center pt-2 border-t-0">
             <Button

@@ -1,25 +1,36 @@
 export {
-  bootstrapSignalWorkbench,
-  loadSignalChartData,
-  persistSignalDraft,
+  makeSignalWorkbench,
   runSignalWorkbench,
-  submitSignalDraft,
+  signalWorkbench,
+  SignalWorkbenchAdapters,
+  type SignalWorkbenchAdapterShape,
+  type SignalWorkbenchEvent,
 } from "./service";
 export {
   clampBandwidth,
   COMMITTED_STORAGE_KEY,
   DEFAULT_SIGNAL_DRAFT,
   DRAFT_STORAGE_KEY,
-  getFrequencyLabel,
-  getFrequencyTooltip,
-  getMaxBandwidth,
-  getPhaseLabel,
-  getPhaseTooltip,
+  getSignalDraftPolicy,
+  INITIAL_SIGNAL_WORKBENCH_STATE,
   LEGACY_STORAGE_KEY,
-  mergeSignalDraft,
   normalizeOutputType,
-  toSignalDraft,
-  type SignalBootstrap,
+  ROW_CACHE_STORAGE_KEY,
+  WAVEFORM_OPTIONS,
+  type NumericSignalDraftField,
+  type NumericSignalDraftFieldPolicy,
   type SignalDraft,
+  type SignalDraftPolicy,
+  type SignalWorkbenchState,
 } from "./model";
-export { describeWorkbenchError, type WorkbenchError } from "./errors";
+export {
+  describeWorkbenchError,
+  isWorkbenchError,
+  type WorkbenchError,
+} from "./errors";
+export {
+  createSignalChartOptions,
+  createSignalSeriesOptions,
+  getSignalChartLegend,
+  type SignalChartPalette,
+} from "./chart-presentation";

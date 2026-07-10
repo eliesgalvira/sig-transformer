@@ -2,14 +2,6 @@ import * as Effect from "effect/Effect";
 import { describe, expect, it } from "@effect/vitest";
 import {
   computeFFTEffect,
-  computeFFTCosEffect,
-  computeFFTExpEffect,
-  computeFFTSignEffect,
-  computeFFTSinEffect,
-  computeFFTSincEffect,
-  computeFFTSquareEffect,
-  computeFFTTriangleEffect,
-  type FFTComputationError,
 } from "@/lib/fft/computations";
 import type {
   FFTDataRow,
@@ -17,14 +9,9 @@ import type {
   WaveformShape,
 } from "@/lib/types/signal";
 
-type ComputeFft = (
-  params: SignalParams,
-) => Effect.Effect<FFTDataRow[], FFTComputationError>;
-
 type NamedCase = {
   readonly shape: WaveformShape;
   readonly params: SignalParams;
-  readonly compute: ComputeFft;
 };
 
 const defaultParams = {
@@ -40,7 +27,6 @@ const defaultParams = {
 const namedCases: ReadonlyArray<NamedCase> = [
   {
     shape: "square",
-    compute: computeFFTSquareEffect,
     params: {
       ...defaultParams,
       signalShape: "square",
@@ -50,7 +36,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "triangle",
-    compute: computeFFTTriangleEffect,
     params: {
       ...defaultParams,
       signalShape: "triangle",
@@ -60,7 +45,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sinc",
-    compute: computeFFTSincEffect,
     params: {
       ...defaultParams,
       signalShape: "sinc",
@@ -70,7 +54,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "cos",
-    compute: computeFFTCosEffect,
     params: {
       ...defaultParams,
       signalShape: "cos",
@@ -81,7 +64,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sin",
-    compute: computeFFTSinEffect,
     params: {
       ...defaultParams,
       signalShape: "sin",
@@ -92,7 +74,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "exp",
-    compute: computeFFTExpEffect,
     params: {
       ...defaultParams,
       signalShape: "exp",
@@ -103,7 +84,6 @@ const namedCases: ReadonlyArray<NamedCase> = [
   },
   {
     shape: "sign",
-    compute: computeFFTSignEffect,
     params: {
       ...defaultParams,
       signalShape: "sign",
@@ -319,21 +299,6 @@ describe("computeFFT", () => {
 
         for (let index = 0; index < actualRows.length; index += 1) {
           expectRowEqual(actualRows[index]!, expectedRows[index]!);
-        }
-      }),
-    );
-  }
-
-  for (const testCase of namedCases) {
-    it.effect(`dispatches ${testCase.shape} to the dedicated entry point`, () =>
-      Effect.gen(function* () {
-        const dispatchedRows = yield* computeFFTEffect(testCase.params);
-        const directRows = yield* testCase.compute(testCase.params);
-
-        expect(dispatchedRows).toHaveLength(directRows.length);
-
-        for (let index = 0; index < dispatchedRows.length; index += 1) {
-          expectRowEqual(dispatchedRows[index]!, directRows[index]!);
         }
       }),
     );

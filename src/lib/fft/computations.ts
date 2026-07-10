@@ -194,53 +194,18 @@ function sampleCosine(time: number, params: SignalParams): number {
   );
 }
 
-export function computeFFTSquareSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleSquare);
-}
+const signalSamplers: Record<SignalParams["signalShape"], SignalSampler> = {
+  square: sampleSquare,
+  triangle: sampleTriangle,
+  sinc: sampleSinc,
+  cos: sampleCosine,
+  sin: sampleSine,
+  exp: sampleExponential,
+  sign: sampleSign,
+};
 
-export function computeFFTSinSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleSine);
-}
-
-export function computeFFTExpSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleExponential);
-}
-
-export function computeFFTSignSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, (time) => sampleSign(time));
-}
-
-export function computeFFTSincSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleSinc);
-}
-
-export function computeFFTCosSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleCosine);
-}
-
-export function computeFFTTriangleSync(params: SignalParams): FFTDataRow[] {
-  return computeFFTFromSignal(params, sampleTriangle);
-}
-
-export function computeFFTSync(params: SignalParams): FFTDataRow[] {
-  switch (params.signalShape) {
-    case "square":
-      return computeFFTSquareSync(params);
-    case "sinc":
-      return computeFFTSincSync(params);
-    case "cos":
-      return computeFFTCosSync(params);
-    case "triangle":
-      return computeFFTTriangleSync(params);
-    case "sin":
-      return computeFFTSinSync(params);
-    case "exp":
-      return computeFFTExpSync(params);
-    case "sign":
-      return computeFFTSignSync(params);
-    default:
-      throw new Error(`Unsupported waveform shape: ${params.signalShape}`);
-  }
+function computeFFTSync(params: SignalParams): FFTDataRow[] {
+  return computeFFTFromSignal(params, signalSamplers[params.signalShape]);
 }
 
 export const computeFFTEffect = Effect.fn("computeFFT")(function* (
@@ -251,70 +216,3 @@ export const computeFFTEffect = Effect.fn("computeFFT")(function* (
     catch: (error) => new FFTComputationError({ error }),
   });
 });
-
-export const computeFFTSquareEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTSquareSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTSinEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTSinSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTExpEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTExpSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTSignEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTSignSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTSincEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTSincSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTCosEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTCosSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFTTriangleEffect = (params: SignalParams) =>
-  Effect.try({
-    try: () => computeFFTTriangleSync(params),
-    catch: (error) => new FFTComputationError({ error }),
-  });
-
-export const computeFFT = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTEffect(params));
-
-export const computeFFTSquare = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTSquareEffect(params));
-
-export const computeFFTSin = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTSinEffect(params));
-
-export const computeFFTExp = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTExpEffect(params));
-
-export const computeFFTSign = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTSignEffect(params));
-
-export const computeFFTSinc = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTSincEffect(params));
-
-export const computeFFTCos = (params: SignalParams): Promise<FFTDataRow[]> =>
-  Effect.runPromise(computeFFTCosEffect(params));
-
-export const computeFFTTriangle = (
-  params: SignalParams,
-): Promise<FFTDataRow[]> => Effect.runPromise(computeFFTTriangleEffect(params));
